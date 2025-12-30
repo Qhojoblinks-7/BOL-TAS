@@ -1,0 +1,31 @@
+import React from 'react';
+import { Edit } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/shared/ui/avatar';
+
+const TeenPortalHeader = ({ user, onEditProfile }) => {
+  return (
+    <header className="sticky top-0 z-10 bg-white border-b border-gray-300 p-4 flex items-center justify-between">
+      <div className="flex items-center space-x-3">
+        <Avatar className="h-12 w-12 rounded-md">
+          <AvatarImage src={user.photoURL} alt={user.displayName} />
+          <AvatarFallback className="rounded-md bg-gray-300 text-black font-black">
+            {user.displayName?.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h1 className="font-black text-lg tracking-tight text-black">{user.displayName}</h1>
+          <p className="text-sm text-gray-600 tracking-widest uppercase">Teen Member</p>
+        </div>
+      </div>
+      <button
+        onClick={onEditProfile}
+        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+        title="Edit Profile"
+      >
+        <Edit size={20} />
+      </button>
+    </header>
+  );
+};
+
+export default TeenPortalHeader;
