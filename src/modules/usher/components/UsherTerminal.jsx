@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { QrCode, Keyboard, Search, CheckCircle, Undo, X } from 'lucide-react';
+import { QrCode, Keyboard, Search, CheckCircle, Undo, X, LogOut } from 'lucide-react';
 
 const UsherTerminal = () => {
   const [activeTab, setActiveTab] = useState('qr');
@@ -11,7 +11,6 @@ const UsherTerminal = () => {
   const [attendanceLog, setAttendanceLog] = useState([]);
   const [showUndo, setShowUndo] = useState(false);
   const [lastCheckIn, setLastCheckIn] = useState(null);
-  const qrScannerRef = useRef(null);
   const scannerInstance = useRef(null);
 
   // Mock data for search
@@ -126,9 +125,18 @@ const UsherTerminal = () => {
       <div className="absolute bottom-20 left-20 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: 'hsl(186, 26%, 62%)' }}></div>
 
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-300 p-3 md:p-4">
-        <h1 className="text-xl md:text-2xl font-bold text-black">Usher Terminal</h1>
-        <p className="text-sm md:text-base text-gray-600">Church Attendance Check-in</p>
+      <header className="sticky top-0 z-10 bg-white border-b border-gray-300 p-3 md:p-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-black">Usher Terminal</h1>
+          <p className="text-sm md:text-base text-gray-600">Church Attendance Check-in</p>
+        </div>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('userLoggedOut'))}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors text-red-600"
+          title="Logout"
+        >
+          <LogOut size={24} />
+        </button>
       </header>
 
       {/* Tab Navigation */}

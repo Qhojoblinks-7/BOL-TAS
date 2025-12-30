@@ -54,7 +54,11 @@ const TeenPortal = () => {
       <div className="absolute top-20 left-10 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: 'hsl(140, 24, 85)' }}></div>
       <div className="absolute top-40 right-10 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: 'hsl(248, 22%, 50%)' }}></div>
       <div className="absolute bottom-20 left-20 w-40 h-40 rounded-full opacity-30 blur-3xl" style={{ backgroundColor: 'hsl(186, 26%, 62%)' }}></div>
-      <TeenPortalHeader user={user} onEditProfile={() => navigate('/edit-profile')} />
+      <TeenPortalHeader
+        user={user}
+        onEditProfile={() => navigate('/edit-profile')}
+        onLogout={() => window.dispatchEvent(new CustomEvent('userLoggedOut'))}
+      />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col p-4 pb-20 space-y-4">

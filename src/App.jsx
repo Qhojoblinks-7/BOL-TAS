@@ -33,9 +33,15 @@ function App() {
       setUserRole(event.detail.role);
     };
 
+    const handleUserLoggedOut = () => {
+      localStorage.removeItem('userAccount');
+      setUserRole(null);
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('userAccountCreated', handleAccountCreated);
     window.addEventListener('userLoggedIn', handleUserLoggedIn);
+    window.addEventListener('userLoggedOut', handleUserLoggedOut);
 
     // Also check for changes within the same tab
     const interval = setInterval(() => {
@@ -50,6 +56,7 @@ function App() {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('userAccountCreated', handleAccountCreated);
       window.removeEventListener('userLoggedIn', handleUserLoggedIn);
+      window.removeEventListener('userLoggedOut', handleUserLoggedOut);
       clearInterval(interval);
     };
   }, [userRole]);

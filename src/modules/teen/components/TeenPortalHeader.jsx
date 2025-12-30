@@ -1,8 +1,8 @@
 import React from 'react';
-import { Edit } from 'lucide-react';
+import { Edit, LogOut } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/shared/ui/avatar';
 
-const TeenPortalHeader = ({ user, onEditProfile }) => {
+const TeenPortalHeader = ({ user, onEditProfile, onLogout }) => {
   return (
     <header className="sticky top-0 z-10 bg-white border-b border-gray-300 p-4 flex items-center justify-between">
       <div className="flex items-center space-x-3">
@@ -17,13 +17,22 @@ const TeenPortalHeader = ({ user, onEditProfile }) => {
           <p className="text-sm text-gray-600 tracking-widest uppercase">Teen Member</p>
         </div>
       </div>
-      <button
-        onClick={onEditProfile}
-        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-        title="Edit Profile"
-      >
-        <Edit size={20} />
-      </button>
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={onEditProfile}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          title="Edit Profile"
+        >
+          <Edit size={20} />
+        </button>
+        <button
+          onClick={onLogout}
+          className="p-2 rounded-full hover:bg-gray-100 transition-colors text-red-600"
+          title="Logout"
+        >
+          <LogOut size={20} />
+        </button>
+      </div>
     </header>
   );
 };
