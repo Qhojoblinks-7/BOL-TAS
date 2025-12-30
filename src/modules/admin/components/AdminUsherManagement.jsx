@@ -20,6 +20,9 @@ const AdminUsherManagement = () => {
   ]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmData, setConfirmData] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -116,14 +119,9 @@ const AdminUsherManagement = () => {
 
   const handleDeactivateUsher = (usherId) => {
     const usher = ushers.find(u => u.id === usherId);
-    if (window.confirm(`Are you sure you want to deactivate ${usher.fullName}? They will lose access to the terminal.`)) {
-      setUshers(ushers.map(u =>
-        u.id === usherId ? { ...u, status: 'Inactive' } : u
-      ));
-      setMessage(`${usher.fullName} has been deactivated.`);
-      setMessageType('success');
-      setTimeout(() => setMessage(''), 5000);
-    }
+    setConfirmAction('deactivate');
+    setConfirmData({ usherId, usher });
+    setShowConfirmModal(true);
   };
 
   const handleReactivateUsher = (usherId) => {
@@ -138,12 +136,27 @@ const AdminUsherManagement = () => {
 
   const handleDeleteUsher = (usherId) => {
     const usher = ushers.find(u => u.id === usherId);
-    if (window.confirm(`Are you sure you want to delete ${usher.fullName}? This action cannot be undone.`)) {
-      setUshers(ushers.filter(u => u.id !== usherId));
-      setMessage(`${usher.fullName} has been deleted.`);
-      setMessageType('success');
-      setTimeout(() => setMessage(''), 5000);
+    setConfirmAction('delete');
+    setConfirmData({ usherId, usher });
+    setShowConfirmModal(true);
+  };
+
+  const executeConfirmAction = () => {
+    if (confirmAction === 'deactivate') {
+      setUshers(ushers.map(u =>
+        u.id === confirmData.usherId ? { ...u, status: 'Inactive' } : u
+      ));
+      setMessage(`${confirmData.usher.fullName} has been deactivated.`);
+    } else if (confirmAction === 'delete') {
+      setUshers(ushers.filter(u => u.id !== confirmData.usherId));
+      setMessage(`${confirmData.usher.fullName} has been deleted.`);
     }
+
+    setMessageType('success');
+    setShowConfirmModal(false);
+    setConfirmAction(null);
+    setConfirmData(null);
+    setTimeout(() => setMessage(''), 5000);
   };
 
   const togglePasswordVisibility = (usherId) => {
@@ -284,6 +297,46 @@ const AdminUsherManagement = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && confirmData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 size={32} className="text-red-600" />
+              </div>
+              <h2 className="text-xl font-bold text-black mb-2">Confirm Action</h2>
+              <p className="text-gray-600 mb-6">
+                {confirmAction === 'deactivate'
+                  ? `Are you sure you want to deactivate ${confirmData.usher.fullName}? They will lose access to the terminal.`
+                  : `Are you sure you want to delete ${confirmData.usher.fullName}? This action cannot be undone.`
+                }
+              </p>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={executeConfirmAction}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold transition-all active:scale-95"
+                >
+                  {confirmAction === 'deactivate' ? 'Deactivate' : 'Delete'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    setConfirmAction(null);
+                    setConfirmData(null);
+                  }}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-bold transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

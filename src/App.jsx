@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AdminLayout from './components/layout/AdminLayout';
 import AdminMain from './modules/admin/components/AdminMain';
+import StatisticsPage from './modules/admin/components/StatisticsPage';
 import MembersPage from './modules/admin/components/MembersPage';
 import AttendancePage from './modules/admin/components/AttendancePage';
 import UshersPage from './modules/admin/components/UshersPage';
@@ -71,6 +72,7 @@ function App() {
           <>
             <Route path="/" element={<AdminLayout><AdminMain /></AdminLayout>} />
             <Route path="/overview" element={<AdminLayout><AdminMain /></AdminLayout>} />
+            <Route path="/statistics" element={<AdminLayout><StatisticsPage /></AdminLayout>} />
             <Route path="/members" element={<AdminLayout><MembersPage /></AdminLayout>} />
             <Route path="/attendance" element={<AdminLayout><AttendancePage /></AdminLayout>} />
             <Route path="/ushers" element={<AdminLayout><UshersPage /></AdminLayout>} />

@@ -4,9 +4,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/shared/ui/avat
 import { Button } from '@/components/shared/ui/button';
 import { Input } from '@/components/shared/ui/input';
 
-const TopNav = () => {
+const TopNav = ({ isSidebarCollapsed }) => {
   return (
-    <header className="bg-white/10 backdrop-blur-md border-b border-white/20 h-16 flex items-center justify-between px-4">
+    <header className={`fixed top-0 ${isSidebarCollapsed ? 'left-16' : 'left-64'} right-0 z-30 bg-white/10 backdrop-blur-md border-b border-white/20 h-16 flex items-center justify-between px-4`}>
       <div className="flex items-center flex-1 max-w-md">
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -25,9 +25,6 @@ const TopNav = () => {
           </Avatar>
           <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
         </div>
-        <Button variant="ghost" size="icon" className="text-[#1a8995] hover:bg-white/20">
-          <LogOut className="h-5 w-5" />
-        </Button>
       </div>
     </header>
   );
