@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Send, CheckCircle, AlertCircle, Phone, Shield } from 'lucide-react';
+import RecoveryMethod from './Recovery/RecoveryMethod';
+import CodeVerification from './Recovery/CodeVerification';
+import BackupCodes from './Recovery/BackupCodes';
+import TrustedContacts from './Recovery/TrustedContacts';
 
 const RecoveryTab = ({ onRecover }) => {
   const [email, setEmail] = useState('');
@@ -11,6 +14,15 @@ const RecoveryTab = ({ onRecover }) => {
   const [recoveryCode, setRecoveryCode] = useState('');
   const [showCodeVerification, setShowCodeVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [activeTab, setActiveTab] = useState('recovery'); // 'recovery', 'backup', 'trusted'
+  const [backupCodes, setBackupCodes] = useState(['BOL-BACKUP-001', 'BOL-BACKUP-002', 'BOL-BACKUP-003']);
+  const [trustedContacts, setTrustedContacts] = useState([
+    { id: 1, name: 'Sarah Doe', email: 'sarah@email.com', phone: '(555) 555-5555' }
+  ]);
+  const [newContactName, setNewContactName] = useState('');
+  const [newContactEmail, setNewContactEmail] = useState('');
+  const [newContactPhone, setNewContactPhone] = useState('');
+  const [showAddContact, setShowAddContact] = useState(false);
 
   const handleSendRecovery = async () => {
     if (recoveryMethod === 'email' && !email) {
@@ -69,146 +81,139 @@ const RecoveryTab = ({ onRecover }) => {
     setMessage('');
   };
 
+  const generateBackupCodes = () => {
+    const codes = Array.from({ length: 5 }, (_, i) => 
+      `BOL-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${i + 1}`
+    );
+    setBackupCodes(codes);
+    setMessage('Backup codes generated successfully!');
+    setMessageType('success');
+  };
+
+  const downloadBackupCodes = () => {
+    const text = 'BOL-TAS Backup Codes\n' + 
+                 'Keep these codes safe. Each code can be used once for recovery.\n\n' +
+                 backupCodes.map((code, i) => `${i + 1}. ${code}`).join('\n');
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', 'backup-codes.txt');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const addTrustedContact = () => {
+    if (!newContactName || (!newContactEmail && !newContactPhone)) {
+      setMessage('Please provide at least a name and email or phone.');
+      setMessageType('error');
+      return;
+    }
+    const newContact = {
+      id: Date.now(),
+      name: newContactName,
+      email: newContactEmail,
+      phone: newContactPhone
+    };
+    setTrustedContacts([...trustedContacts, newContact]);
+    setNewContactName('');
+    setNewContactEmail('');
+    setNewContactPhone('');
+    setShowAddContact(false);
+    setMessage('Trusted contact added successfully!');
+    setMessageType('success');
+  };
+
+  const removeTrustedContact = (id) => {
+    setTrustedContacts(trustedContacts.filter(contact => contact.id !== id));
+    setMessage('Trusted contact removed.');
+    setMessageType('success');
+  };
+
   return (
     <div className="flex-1 flex flex-col space-y-4">
-      <h2 className="text-xl text-center font-bold text-black">ID Recovery</h2>
-      <div className="bg-white/50 backdrop-blur-md rounded-lg p-4 shadow-lg border border-gray-300 space-y-4">
-        <div className="flex items-center space-x-2">
-          <Shield size={20} />
-          <p className="font-medium text-black">Recover Lost ID</p>
-        </div>
-        <p className="text-sm text-gray-600">
-          Enter your registered contact information to receive recovery instructions for your lost BOL-ID.
-        </p>
-
-        {!showCodeVerification ? (
-          <>
-            {/* Recovery Method Selection */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Recovery Method</label>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setRecoveryMethod('email')}
-                  className={`flex-1 py-2 px-3 rounded-md transition-colors ${
-                    recoveryMethod === 'email'
-                      ? 'bg-[hsl(186,70%,34%)]/80 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  <Mail size={16} className="inline mr-1" /> Email
-                </button>
-                <button
-                  onClick={() => setRecoveryMethod('phone')}
-                  className={`flex-1 py-2 px-3 rounded-md transition-colors ${
-                    recoveryMethod === 'phone'
-                      ? 'bg-[hsl(186,70%,34%)]/80 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  <Phone size={16} className="inline mr-1" /> Phone
-                </button>
-              </div>
-            </div>
-
-            {/* Email Input */}
-            {recoveryMethod === 'email' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Registered Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.email@example.com"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#d1e5e6] focus:border-[#d1e5e6]"
-                />
-              </div>
-            )}
-
-            {/* Phone Input */}
-            {recoveryMethod === 'phone' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Registered Phone Number</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+1 (555) 000-0000"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#d1e5e6] focus:border-[#d1e5e6]"
-                />
-              </div>
-            )}
-
-            {/* Send Button */}
-            <button
-              onClick={handleSendRecovery}
-              disabled={isSending}
-              className="w-full flex items-center justify-center px-4 py-2 bg-[hsl(186,70%,34%)]/80 text-white rounded-lg hover:bg-opacity-80 transition-colors disabled:opacity-50"
-            >
-              {isSending ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send size={16} className="mr-2" />
-                  Send Recovery Code
-                </>
-              )}
-            </button>
-          </>
-        ) : (
-          <>
-            {/* Verification Code Input */}
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-              <p className="text-sm text-blue-800 font-medium mb-3">Enter the verification code sent to your {recoveryMethod}</p>
-              <input
-                type="text"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value.toUpperCase())}
-                placeholder="Enter 6-digit code"
-                maxLength="6"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#d1e5e6] focus:border-[#d1e5e6] text-center tracking-widest"
-              />
-            </div>
-
-            {/* Verify Button */}
-            <button
-              onClick={handleVerifyCode}
-              className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <CheckCircle size={16} className="mr-2" />
-              Verify Code
-            </button>
-
-            {/* Back Button */}
-            <button
-              onClick={handleReset}
-              className="w-full px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors"
-            >
-              Back
-            </button>
-          </>
-        )}
-
-        {/* Messages */}
-        {message && (
-          <div
-            className={`flex items-center space-x-2 text-sm p-3 rounded-md ${
-              messageType === 'success'
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-red-50 text-red-700 border border-red-200'
+      <h2 className="text-xl text-center font-bold text-black">Account Recovery</h2>
+      
+      {/* Tab Navigation */}
+      <div className="flex gap-2 bg-white/50 rounded-lg p-2">
+        {[
+          { id: 'recovery', label: 'Recovery' },
+          { id: 'backup', label: 'Backup' },
+          { id: 'trusted', label: 'Trusted' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 py-2 px-3 rounded-md transition-colors font-medium ${
+              activeTab === tab.id
+                ? 'bg-[hsl(186,70%,34%)]/80 text-white'
+                : 'bg-transparent text-gray-700 hover:bg-gray-100'
             }`}
           >
-            {messageType === 'success' ? (
-              <CheckCircle size={16} />
-            ) : (
-              <AlertCircle size={16} />
-            )}
-            <p>{message}</p>
-          </div>
-        )}
+            {tab.label}
+          </button>
+        ))}
       </div>
+
+      {/* Recovery Tab */}
+      {activeTab === 'recovery' && (
+        <>
+          {!showCodeVerification ? (
+            <RecoveryMethod
+              method={recoveryMethod}
+              setMethod={setRecoveryMethod}
+              email={email}
+              setEmail={setEmail}
+              phone={phone}
+              setPhone={setPhone}
+              onSend={handleSendRecovery}
+              isSending={isSending}
+              message={message}
+              messageType={messageType}
+            />
+          ) : (
+            <CodeVerification
+              method={recoveryMethod}
+              verificationCode={verificationCode}
+              setVerificationCode={setVerificationCode}
+              onVerify={handleVerifyCode}
+              onBack={handleReset}
+              message={message}
+              messageType={messageType}
+            />
+          )}
+        </>
+      )}
+
+      {/* Backup Codes Tab */}
+      {activeTab === 'backup' && (
+        <BackupCodes
+          backupCodes={backupCodes}
+          onGenerate={generateBackupCodes}
+          onDownload={downloadBackupCodes}
+          message={message}
+          messageType={messageType}
+        />
+      )}
+
+      {/* Trusted Contacts Tab */}
+      {activeTab === 'trusted' && (
+        <TrustedContacts
+          contacts={trustedContacts}
+          onAdd={addTrustedContact}
+          onRemove={removeTrustedContact}
+          newContactName={newContactName}
+          setNewContactName={setNewContactName}
+          newContactEmail={newContactEmail}
+          setNewContactEmail={setNewContactEmail}
+          newContactPhone={newContactPhone}
+          setNewContactPhone={setNewContactPhone}
+          showAddContact={showAddContact}
+          setShowAddContact={setShowAddContact}
+          message={message}
+          messageType={messageType}
+        />
+      )}
     </div>
   );
 };

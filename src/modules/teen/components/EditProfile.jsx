@@ -109,16 +109,6 @@ const EditProfile = () => {
                 className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] disabled:bg-gray-100 disabled:cursor-not-allowed text-base"
               />
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Preferred Name / Nickname</label>
-              <input
-                type="text"
-                value={preferredName}
-                onChange={(e) => setPreferredName(e.target.value)}
-                disabled={!isEditing}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] disabled:bg-gray-100 disabled:cursor-not-allowed text-base"
-              />
-            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Date of Birth</label>
@@ -264,38 +254,6 @@ const EditProfile = () => {
           </div>
         </div>
 
-        {/* 🔐 Permissions & Safety */}
-        <div className="bg-white rounded-xl p-5 md:p-6 shadow-lg border border-gray-200">
-          <h3 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
-            <Lock size={24} className="text-[hsl(186,70%,34%)]" /> Permissions & Safety
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <label className="font-semibold text-gray-700">Parental Consent for Events</label>
-              <input
-                type="checkbox"
-                checked={parentalConsent}
-                onChange={(e) => setParentalConsent(e.target.checked)}
-                disabled={!isEditing}
-                className="w-5 h-5 rounded cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Privacy Settings</label>
-              <select
-                value={privacySettings}
-                onChange={(e) => setPrivacySettings(e.target.value)}
-                disabled={!isEditing}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] disabled:bg-gray-100 disabled:cursor-not-allowed text-base"
-              >
-                <option>Public</option>
-                <option>Friends Only</option>
-                <option>Private</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
         {/* 🎯 Service-Specific Features */}
         <div className="bg-white rounded-xl p-5 md:p-6 shadow-lg border border-gray-200">
           <h3 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
@@ -309,10 +267,6 @@ const EditProfile = () => {
             <div className="p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
               <p className="text-sm text-gray-600">Volunteer Roles</p>
               <p className="text-lg font-bold text-purple-700">{volunteerRoles}</p>
-            </div>
-            <div className="p-3 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border border-yellow-200">
-              <p className="text-sm text-gray-600">Points & Recognition</p>
-              <p className="text-lg font-bold text-yellow-700">{points} Points</p>
             </div>
           </div>
         </div>
@@ -334,15 +288,6 @@ const EditProfile = () => {
                 <HelpCircle size={18} /> Help & FAQ
               </h4>
               <p className="text-sm text-gray-600">How to use the system and troubleshoot issues</p>
-            </button>
-            <button className="w-full p-4 border-2 border-[hsl(186,70%,34%)]/30 rounded-lg hover:bg-[hsl(186,70%,34%)]/5 transition-all active:scale-95 text-left flex items-center justify-between">
-              <div className="text-left">
-                <h4 className="font-semibold text-black mb-1 flex items-center gap-2">
-                  <MessageSquare size={18} /> Contact Youth Leader
-                </h4>
-                <p className="text-sm text-gray-600">Direct messaging with your youth pastor</p>
-              </div>
-              <span className="text-2xl">→</span>
             </button>
           </div>
         </div>
