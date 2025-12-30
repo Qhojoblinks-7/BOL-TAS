@@ -3,7 +3,7 @@ import React from 'react';
 const SecurityTab = () => {
   return (
     <div className="flex-1 flex flex-col space-y-4">
-      <div className="bg-white/80 backdrop-blur-md rounded-lg p-4 shadow-lg border border-gray-300 space-y-4">
+      <div className="bg-white/50 backdrop-blur-md rounded-lg p-4 shadow-lg border border-gray-300 space-y-4">
         <h3 className="text-lg font-bold text-black">Security Settings</h3>
         <div>
           <p className="font-medium text-black">BOL-Key Security</p>

@@ -38,7 +38,7 @@ const EditProfile = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col p-4 space-y-4">
-        <div className="bg-white/80 backdrop-blur-md rounded-lg p-4 shadow-lg border border-gray-300 space-y-4">
+        <div className="bg-white/50 backdrop-blur-md rounded-lg p-4 shadow-lg border border-gray-300 space-y-4">
           <h3 className="text-lg font-bold text-black">Edit Profile</h3>
           <div>
             <label className="block text-sm font-medium text-gray-700">Display Name</label>
