@@ -143,15 +143,15 @@ graph TD
     K --> N[Call Shepherd Modal]
 
     F --> O[Members Management]
-    O --> P[Local State: members[]]
-    O --> Q[CRUD Operations]
+    O --> P["Local State: members[]"]
+    O --> Q["CRUD Operations"]
     Q --> R[Add Member]
     Q --> S[Edit Member]
     Q --> T[Delete Member]
     Q --> U[Export CSV]
 
     G --> V[Attendance Records]
-    V --> W[Local State: attendanceRecords[]]
+    V --> W["Local State: attendanceRecords[]"]
     W --> X[Filter Operations]
     X --> Y[Date Filter]
     X --> Z[Location Filter]
@@ -160,7 +160,7 @@ graph TD
 
     P --> CC[In-Memory Storage]
     CC --> DD[No Persistence]
-    CC --> EE[Page Refresh = Data Loss]
+    CC --> EE["Page Refresh = Data Loss"]
 
     W --> FF[Static Mock Data]
     FF --> GG[No Real-time Updates]

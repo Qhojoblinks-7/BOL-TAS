@@ -30,7 +30,7 @@ graph TD
     L --> M[Activate Usher Feature in Member's Portal]
 
     M --> N[Member's Teen Portal Updates]
-    N --> O[New "Usher Duty" Button Appears]
+    N --> O[New 'Usher Duty' Button Appears]
     O --> P[Button Shows Active Status]
 
     P --> Q[Member Clicks "Usher Duty" Button]

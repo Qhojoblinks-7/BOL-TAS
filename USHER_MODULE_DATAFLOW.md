@@ -15,7 +15,7 @@ graph TD
     A[Usher User] --> B[UsherTerminal.jsx Main Component]
 
     B --> C[State Management]
-    C --> D[activeTab: 'qr' | 'key' | 'search']
+    C --> D["activeTab: 'qr' | 'key' | 'search'"]
     C --> E[scanResult: string]
     C --> F[bolKeyInput: string]
     C --> G[searchQuery: string]
