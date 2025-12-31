@@ -6,17 +6,17 @@ const BOLKeyTab = ({ bolKeyInput, handleKeypadPress, handleBOLKeySubmit }) => {
     <>
       {/* Input Display */}
       <div className="bg-white rounded-xl p-5 md:p-6 shadow-lg border border-gray-200">
-        <h3 className="text-xl md:text-2xl font-bold text-black mb-4">BOL-Key Entry</h3>
+        <h3 className="text-xl md:text-2xl font-bold text-black mb-4">Personal Code Entry</h3>
         <div className="bg-gradient-to-r from-[hsl(186,70%,34%)]/5 to-[hsl(186,70%,34%)]/10 border-2 border-[hsl(186,70%,34%)]/30 p-6 md:p-8 rounded-lg text-center mb-6">
-          <p className="text-xs md:text-sm text-gray-600 mb-2">Enter your 6-digit BOL-Key</p>
-          <span className="text-4xl md:text-5xl font-mono font-bold text-[hsl(186,70%,34%)] tracking-widest">{bolKeyInput || '••-•••'}</span>
+          <p className="text-xs md:text-sm text-gray-600 mb-2">Enter the 5-digit personal code</p>
+          <span className="text-4xl md:text-5xl font-mono font-bold text-[hsl(186,70%,34%)] tracking-widest">{bolKeyInput || '•••••'}</span>
         </div>
       </div>
 
       {/* Keypad */}
       <div className="bg-white rounded-xl p-5 md:p-6 shadow-lg border border-gray-200">
         <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4">
-          {[1,2,3,4,5,6,7,8,9,'-',0].map((digit) => (
+          {[1,2,3,4,5,6,7,8,9,0].map((digit) => (
             <button
               key={digit}
               onClick={() => handleKeypadPress(digit)}
@@ -40,7 +40,7 @@ const BOLKeyTab = ({ bolKeyInput, handleKeypadPress, handleBOLKeySubmit }) => {
         </div>
         <button
           onClick={handleBOLKeySubmit}
-          disabled={bolKeyInput.length !== 6}
+          disabled={bolKeyInput.length !== 5}
           className="w-full bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-4 md:py-5 rounded-lg active:scale-95 transition-all duration-100 font-bold text-base md:text-lg shadow-md hover:shadow-lg disabled:shadow-none"
         >
           Check In

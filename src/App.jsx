@@ -12,6 +12,7 @@ import EditProfile from './modules/teen/components/EditProfile';
 import UsherTerminal from './modules/usher/components/UsherTerminal';
 import CreateAccount from './components/auth/CreateAccount';
 import Login from './components/auth/Login';
+import { cleanupExpiredAssignments } from './utils/helpers';
 
 function App() {
   const [userRole, setUserRole] = useState(() => {
@@ -21,6 +22,9 @@ function App() {
 
   // Listen for localStorage changes and custom events
   useEffect(() => {
+    // Cleanup expired assignments on app load
+    cleanupExpiredAssignments();
+
     const handleStorageChange = () => {
       const userAccount = localStorage.getItem('userAccount');
       setUserRole(userAccount ? JSON.parse(userAccount).role : null);
@@ -39,10 +43,20 @@ function App() {
       setUserRole(null);
     };
 
+    const handleTempUsherActivated = () => {
+      setUserRole('tempUsher');
+    };
+
+    const handleTempUsherExpired = () => {
+      setUserRole('teen');
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('userAccountCreated', handleAccountCreated);
     window.addEventListener('userLoggedIn', handleUserLoggedIn);
     window.addEventListener('userLoggedOut', handleUserLoggedOut);
+    window.addEventListener('tempUsherActivated', handleTempUsherActivated);
+    window.addEventListener('tempUsherExpired', handleTempUsherExpired);
 
     // Also check for changes within the same tab
     const interval = setInterval(() => {
@@ -58,6 +72,8 @@ function App() {
       window.removeEventListener('userAccountCreated', handleAccountCreated);
       window.removeEventListener('userLoggedIn', handleUserLoggedIn);
       window.removeEventListener('userLoggedOut', handleUserLoggedOut);
+      window.removeEventListener('tempUsherActivated', handleTempUsherActivated);
+      window.removeEventListener('tempUsherExpired', handleTempUsherExpired);
       clearInterval(interval);
     };
   }, [userRole]);
@@ -89,7 +105,12 @@ function App() {
         )}
 
         {/* Usher Routes */}
-        {userRole === 'usher' && (
+        {(userRole === 'usher' || userRole === 'admin') && (
+          <Route path="/usher" element={<UsherTerminal />} />
+        )}
+
+        {/* TempUsher Routes */}
+        {userRole === 'tempUsher' && (
           <Route path="/" element={<UsherTerminal />} />
         )}
 

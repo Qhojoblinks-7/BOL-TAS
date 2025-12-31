@@ -4,33 +4,48 @@ import QRCode from 'qrcode';
 import IdTab from './IdTab';
 import SecurityTab from './SecurityTab';
 import RecoveryTab from './RecoveryTab';
+import AttendanceTab from './AttendanceTab';
 import { SideDrawer, SideDrawerContent, SideDrawerHeader, SideDrawerTrigger, SideDrawerClose } from '@/components/shared/ui/side-drawer';
-import { Home, Settings, Shield, Edit, LogOut, Menu } from 'lucide-react';
+import { Home, Settings, Shield, Edit, LogOut, Menu, UserCheck, Calendar } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/shared/ui/avatar';
+import { getActiveAssignmentForEmail } from '../../../utils/helpers';
+import UsherActivationModal from './UsherActivationModal';
 
-// Generate BOL-Key in YY-NNN format
-const generateBolKey = () => {
-  const year = new Date().getFullYear() % 100;
-  const num = Math.floor(Math.random() * 1000);
-  return `${year.toString().padStart(2, '0')}-${num.toString().padStart(3, '0')}`;
+// Generate unique 5-digit personal code
+const generatePersonalCode = () => {
+  // For demo, generate random 5-digit code (in real app, ensure uniqueness)
+  return Math.floor(10000 + Math.random() * 90000).toString();
 };
 
 const TeenPortal = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({
-    displayName: 'Teen User',
-    photoURL: null, // or a placeholder URL
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem('teenProfile');
+    if (stored) {
+      const profile = JSON.parse(stored);
+      return {
+        displayName: profile.fullName,
+        photoURL: profile.profilePhoto,
+      };
+    }
+    return {
+      displayName: 'Teen User',
+      photoURL: null,
+    };
   });
-  const [bolKey, setBolKey] = useState(() => {
-    const stored = localStorage.getItem('bolKey');
+  const [personalCode, setPersonalCode] = useState(() => {
+    const stored = localStorage.getItem('personalCode');
     if (stored) return stored;
-    const newKey = generateBolKey();
-    localStorage.setItem('bolKey', newKey);
-    return newKey;
+    const newCode = generatePersonalCode();
+    localStorage.setItem('personalCode', newCode);
+    return newCode;
   });
   const [qrCode, setQrCode] = useState('');
   const [activeTab, setActiveTab] = useState('id');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [hasUsherAssignment, setHasUsherAssignment] = useState(false);
+  const [currentMemberId, setCurrentMemberId] = useState(null);
+  const [showUsherModal, setShowUsherModal] = useState(false);
 
   // Generate QR Code
   const generateQR = async (text) => {
@@ -44,10 +59,47 @@ const TeenPortal = () => {
 
   useEffect(() => {
     const updateQR = async () => {
-      await generateQR(bolKey);
+      await generateQR(personalCode);
     };
     updateQR();
-  }, [bolKey]);
+  }, [personalCode]);
+
+  // Check for active usher assignments
+  useEffect(() => {
+    const checkUsherAssignment = () => {
+      // Get current user account to find email
+      const userAccount = localStorage.getItem('userAccount');
+      if (userAccount) {
+        const account = JSON.parse(userAccount);
+        const email = account.email;
+        if (email) {
+          const assignment = getActiveAssignmentForEmail(email);
+          setHasUsherAssignment(!!assignment);
+          // Store assignment for modal if needed
+          setCurrentMemberId(assignment ? assignment.memberId : null);
+        }
+      }
+    };
+
+    checkUsherAssignment();
+
+    // Listen for assignment changes
+    const handleAssignmentChange = () => {
+      checkUsherAssignment();
+    };
+
+    window.addEventListener('tempUsherActivated', handleAssignmentChange);
+    window.addEventListener('tempUsherExpired', handleAssignmentChange);
+    window.addEventListener('assignmentCreated', handleAssignmentChange);
+    window.addEventListener('assignmentRevoked', handleAssignmentChange);
+
+    return () => {
+      window.removeEventListener('tempUsherActivated', handleAssignmentChange);
+      window.removeEventListener('tempUsherExpired', handleAssignmentChange);
+      window.removeEventListener('assignmentCreated', handleAssignmentChange);
+      window.removeEventListener('assignmentRevoked', handleAssignmentChange);
+    };
+  }, []);
 
 
   return (
@@ -63,7 +115,7 @@ const TeenPortal = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col p-4 space-y-4">
         {activeTab === 'id' && (
-          <IdTab bolKey={bolKey} qrCode={qrCode} />
+          <IdTab personalCode={personalCode} qrCode={qrCode} />
         )}
 
         {activeTab === 'security' && (
@@ -72,10 +124,14 @@ const TeenPortal = () => {
 
         {activeTab === 'recovery' && (
           <RecoveryTab onRecover={() => {
-            const newKey = generateBolKey();
-            setBolKey(newKey);
-            localStorage.setItem('bolKey', newKey);
+            const newCode = generatePersonalCode();
+            setPersonalCode(newCode);
+            localStorage.setItem('personalCode', newCode);
           }} />
+        )}
+
+        {activeTab === 'attendance' && (
+          <AttendanceTab />
         )}
       </main>
 
@@ -139,9 +195,42 @@ const TeenPortal = () => {
               <Shield size={20} />
               <span>Recovery</span>
             </button>
+            <button
+              onClick={() => {
+                setActiveTab('attendance');
+                setDrawerOpen(false);
+              }}
+              className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                activeTab === 'attendance' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
+              }`}
+            >
+              <Calendar size={20} />
+              <span>Attendance</span>
+            </button>
+            {hasUsherAssignment && (
+              <button
+                onClick={() => {
+                  setShowUsherModal(true);
+                  setDrawerOpen(false);
+                }}
+                className="flex items-center space-x-3 p-3 rounded-lg transition-colors bg-green-600 text-white hover:bg-green-700"
+              >
+                <UserCheck size={20} />
+                <span>Usher Duty</span>
+              </button>
+            )}
           </div>
         </SideDrawerContent>
       </SideDrawer>
+
+      {/* Usher Activation Modal */}
+      {showUsherModal && (
+        <UsherActivationModal
+          email={JSON.parse(localStorage.getItem('userAccount')).email}
+          onSuccess={() => setShowUsherModal(false)}
+          onCancel={() => setShowUsherModal(false)}
+        />
+      )}
 
     </div>
   );

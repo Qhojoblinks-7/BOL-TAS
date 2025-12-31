@@ -2,7 +2,7 @@ import React from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { CheckCircle, Camera } from 'lucide-react';
 
-const QRScanTab = ({ isScanning, scanResult, startScanning, stopScanning, onScanSuccess, onScanFailure }) => {
+const QRScanTab = ({ isScanning, scanResult, scanError, startScanning, stopScanning, onScanSuccess, onScanFailure, onRetry }) => {
   return (
     <>
       {/* Camera Feed Box */}
@@ -49,14 +49,36 @@ const QRScanTab = ({ isScanning, scanResult, startScanning, stopScanning, onScan
         </div>
       </div>
 
-      {/* Result Box */}
-      {scanResult && (
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 md:p-6 shadow-lg border-2 border-green-300 animate-pulse">
+      {/* Error Box */}
+      {scanError && (
+        <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-5 md:p-6 shadow-lg border-2 border-red-300">
           <div className="flex items-center gap-3">
-            <CheckCircle className="text-green-600 flex-shrink-0" size={28} />
+            <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-red-600 text-sm">!</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-red-700 font-semibold">Scan Error</p>
+              <p className="text-base text-red-900">{scanError}</p>
+            </div>
+          </div>
+          <button
+            onClick={onRetry}
+            className="mt-3 w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {/* Result Box */}
+      {scanResult && !scanError && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 md:p-6 shadow-lg border-2 border-blue-300">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="text-blue-600 flex-shrink-0" size={28} />
             <div>
-              <p className="text-xs md:text-sm text-green-700 font-semibold">Successfully Checked In</p>
-              <p className="text-base md:text-lg font-bold text-green-900">{scanResult}</p>
+              <p className="text-xs md:text-sm text-blue-700 font-semibold">QR Code Detected</p>
+              <p className="text-base md:text-lg font-bold text-blue-900">{scanResult}</p>
+              <p className="text-sm text-blue-600 mt-1">Please confirm member details to complete check-in.</p>
             </div>
           </div>
         </div>

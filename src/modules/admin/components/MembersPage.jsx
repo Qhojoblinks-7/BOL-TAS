@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Download, Search, User, Mail, Phone, MapPin, Calendar, Filter, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Download, Search, User, Mail, Phone, MapPin, Calendar, Filter, CheckCircle, AlertCircle, UserCheck } from 'lucide-react';
+import UsherAssignmentModal from './UsherAssignmentModal';
+import { saveTemporaryAssignment, getActiveAssignmentForMember, revokeAssignment } from '@/utils/helpers.js';
 
 const MembersPage = () => {
   const [members, setMembers] = useState([
@@ -67,9 +69,11 @@ const MembersPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmData, setConfirmData] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
+  const [assigningMember, setAssigningMember] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('all');
   const [formData, setFormData] = useState({
@@ -152,12 +156,11 @@ const MembersPage = () => {
 
   const exportMembers = () => {
     const csvContent = [
-      ['Member ID', 'Name', 'Email', 'Phone', 'Location', 'Date of Birth', 'Join Date', 'Status', 'Last Attendance', 'Attendance Streak'],
+      ['Member ID', 'Name', 'Contact', 'Location', 'Date of Birth', 'Join Date', 'Status', 'Last Attendance', 'Attendance Streak'],
       ...filteredMembers.map(member => [
         member.id,
         member.fullName,
-        member.email,
-        member.phone,
+        `${member.email} | ${member.phone}`,
         member.location,
         member.dateOfBirth,
         member.joinDate,
@@ -230,6 +233,40 @@ const MembersPage = () => {
     });
 
     setTimeout(() => setMessageType(''), 3000);
+  };
+
+  const handleAssignUsher = (memberId) => {
+    const member = members.find(m => m.id === memberId);
+    if (member) {
+      setAssigningMember(member);
+      setShowAssignmentModal(true);
+    }
+  };
+
+  const handleConfirmAssignment = (assignment) => {
+    // Save assignment to localStorage
+    saveTemporaryAssignment(assignment);
+    console.log('Assignment saved:', assignment);
+
+    // Dispatch event to notify other components
+    window.dispatchEvent(new CustomEvent('assignmentCreated', { detail: assignment }));
+
+    // Close modal and reset state
+    setShowAssignmentModal(false);
+    setAssigningMember(null);
+
+    // Show success message
+    setMessageType('assignment');
+    setTimeout(() => setMessageType(''), 3000);
+  };
+
+  const handleRevokeUsher = (memberId) => {
+    const assignment = getActiveAssignmentForMember(memberId);
+    if (assignment) {
+      revokeAssignment(assignment.id);
+      setMessageType('revoke');
+      setTimeout(() => setMessageType(''), 3000);
+    }
   };
 
   const handleDeleteMember = (memberId) => {
@@ -328,6 +365,8 @@ const MembersPage = () => {
           <p className="font-medium">
             {message === 'success' ? 'Member added successfully!' :
              message === 'delete' ? 'Member deleted successfully!' :
+             message === 'assignment' ? 'Usher duty assigned successfully!' :
+             message === 'revoke' ? 'Usher duty revoked successfully!' :
              'Please fill in all required fields with valid information.'}
           </p>
         </div>
@@ -629,6 +668,18 @@ const MembersPage = () => {
         </div>
       )}
 
+      {/* Usher Assignment Modal */}
+      {showAssignmentModal && assigningMember && (
+        <UsherAssignmentModal
+          member={assigningMember}
+          onConfirm={handleConfirmAssignment}
+          onCancel={() => {
+            setShowAssignmentModal(false);
+            setAssigningMember(null);
+          }}
+        />
+      )}
+
       {/* Members Table */}
       <div className="bg-white/10 backdrop-blur-md rounded-xl shadow-lg border border-white/20 overflow-hidden">
         <div className="overflow-x-auto">
@@ -637,10 +688,10 @@ const MembersPage = () => {
               <tr className="bg-[hsl(186,70%,34%)]/5 border-b border-gray-200">
                 <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Member ID</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Name</th>
-                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Email</th>
-                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Phone</th>
+                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Contact</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Location</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Status</th>
+                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Usher Status</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Last Attendance</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Streak</th>
                 <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Actions</th>
@@ -651,8 +702,18 @@ const MembersPage = () => {
                 <tr key={member.id} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-[hsl(186,70%,34%)]/5 transition-colors`}>
                   <td className="px-4 py-3 text-sm font-mono text-gray-900">{member.id}</td>
                   <td className="px-4 py-3 text-sm text-gray-900 font-medium">{member.fullName}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{member.email}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{member.phone}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    <div className="flex flex-col">
+                      <span className="flex items-center gap-1">
+                        <Mail size={12} />
+                        {member.email}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Phone size={12} />
+                        {member.phone}
+                      </span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-1">
                     <MapPin size={14} />
                     {member.location}
@@ -662,24 +723,64 @@ const MembersPage = () => {
                       {member.status}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-sm">
+                    {getActiveAssignmentForMember(member.id) ? (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircle size={12} className="mr-1" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        Inactive
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-sm text-gray-600">{member.lastAttendance || '-'}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">{member.attendanceStreak} weeks</td>
                   <td className="px-4 py-3 text-sm space-x-2">
-                    <button
-                      onClick={() => handleEditMember(member.id)}
-                      title="Edit Member"
-                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteMember(member.id)}
-                      title="Delete Member"
-                      className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+                     {getActiveAssignmentForMember(member.id) ? (
+                       <>
+                         <button
+                           onClick={() => handleRevokeUsher(member.id)}
+                           title="Revoke Usher Duty"
+                           className="p-1.5 text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                         >
+                           <UserCheck size={16} />
+                         </button>
+                         <button
+                           onClick={() => handleEditMember(member.id)}
+                           title="Edit Member"
+                           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                         >
+                           <Edit size={16} />
+                         </button>
+                       </>
+                     ) : (
+                       <>
+                         <button
+                           onClick={() => handleAssignUsher(member.id)}
+                           title="Assign Usher Duty"
+                           className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
+                         >
+                           <UserCheck size={16} />
+                         </button>
+                         <button
+                           onClick={() => handleEditMember(member.id)}
+                           title="Edit Member"
+                           className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                         >
+                           <Edit size={16} />
+                         </button>
+                         <button
+                           onClick={() => handleDeleteMember(member.id)}
+                           title="Delete Member"
+                           className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                         >
+                           <Trash2 size={16} />
+                         </button>
+                       </>
+                     )}
+                   </td>
                 </tr>
               ))}
             </tbody>

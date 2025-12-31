@@ -1,43 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, Save, X, HelpCircle, MessageSquare, Shield, Trophy, BookOpen, User, Mail, Church, Lock, Compass } from 'lucide-react';
 
 const EditProfile = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  
+
+  // Load profile data from localStorage
+  const loadProfileData = () => {
+    const stored = localStorage.getItem('teenProfile');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return {
+      fullName: 'John Doe',
+      preferredName: 'John',
+      dateOfBirth: '2008-05-15',
+      gender: 'Male',
+      profilePhoto: null,
+      email: 'john@email.com',
+      phoneNumber: '(555) 123-4567',
+      guardianName: 'Michael Doe',
+      guardianPhone: '(555) 987-6543',
+      guardianEmail: 'michael@email.com',
+      emergencyContact: 'Sarah Doe - (555) 222-3333',
+      ministry: 'Youth Choir',
+      membershipStatus: 'Active Member',
+      spiritualMilestones: 'Baptized - 2018',
+      parentalConsent: true,
+      privacySettings: 'Friends Only',
+      attendanceRecords: '45/52 (86%)',
+      volunteerRoles: 'Ushering, Tech Team',
+      points: '2,450'
+    };
+  };
+
+  const initialData = loadProfileData();
+
   // Personal Information
-  const [fullName, setFullName] = useState('John Doe');
-  const [preferredName, setPreferredName] = useState('John');
-  const [dateOfBirth, setDateOfBirth] = useState('2008-05-15');
-  const [gender, setGender] = useState('Male');
-  const [profilePhoto, setProfilePhoto] = useState(null);
+  const [fullName, setFullName] = useState(initialData.fullName);
+  const [preferredName, setPreferredName] = useState(initialData.preferredName);
+  const [dateOfBirth, setDateOfBirth] = useState(initialData.dateOfBirth);
+  const [gender, setGender] = useState(initialData.gender);
+  const [profilePhoto, setProfilePhoto] = useState(initialData.profilePhoto);
 
   // Contact & Guardian Info
-  const [email, setEmail] = useState('john@email.com');
-  const [phoneNumber, setPhoneNumber] = useState('(555) 123-4567');
-  const [guardianName, setGuardianName] = useState('Michael Doe');
-  const [guardianPhone, setGuardianPhone] = useState('(555) 987-6543');
-  const [guardianEmail, setGuardianEmail] = useState('michael@email.com');
-  const [emergencyContact, setEmergencyContact] = useState('Sarah Doe - (555) 222-3333');
+  const [email, setEmail] = useState(initialData.email);
+  const [phoneNumber, setPhoneNumber] = useState(initialData.phoneNumber);
+  const [guardianName, setGuardianName] = useState(initialData.guardianName);
+  const [guardianPhone, setGuardianPhone] = useState(initialData.guardianPhone);
+  const [guardianEmail, setGuardianEmail] = useState(initialData.guardianEmail);
+  const [emergencyContact, setEmergencyContact] = useState(initialData.emergencyContact);
 
   // Church Engagement
-  const [ministry, setMinistry] = useState('Youth Choir');
-  const [membershipStatus, setMembershipStatus] = useState('Active Member');
-  const [spiritualMilestones, setSpiritualMilestones] = useState('Baptized - 2018');
+  const [ministry, setMinistry] = useState(initialData.ministry);
+  const [membershipStatus, setMembershipStatus] = useState(initialData.membershipStatus);
+  const [spiritualMilestones, setSpiritualMilestones] = useState(initialData.spiritualMilestones);
 
   // Permissions & Safety
-  const [parentalConsent, setParentalConsent] = useState(true);
-  const [privacySettings, setPrivacySettings] = useState('Friends Only');
+  const [parentalConsent, setParentalConsent] = useState(initialData.parentalConsent);
+  const [privacySettings, setPrivacySettings] = useState(initialData.privacySettings);
 
   // Service-Specific Features
-  const [attendanceRecords, setAttendanceRecords] = useState('45/52 (86%)');
-  const [volunteerRoles, setVolunteerRoles] = useState('Ushering, Tech Team');
-  const [points, setPoints] = useState('2,450');
+  const [attendanceRecords, setAttendanceRecords] = useState(initialData.attendanceRecords);
+  const [volunteerRoles, setVolunteerRoles] = useState(initialData.volunteerRoles);
+  const [points, setPoints] = useState(initialData.points);
 
   const handleSave = () => {
+    const profileData = {
+      fullName,
+      preferredName,
+      dateOfBirth,
+      gender,
+      profilePhoto,
+      email,
+      phoneNumber,
+      guardianName,
+      guardianPhone,
+      guardianEmail,
+      emergencyContact,
+      ministry,
+      membershipStatus,
+      spiritualMilestones,
+      parentalConsent,
+      privacySettings,
+      attendanceRecords,
+      volunteerRoles,
+      points
+    };
+    localStorage.setItem('teenProfile', JSON.stringify(profileData));
     setIsEditing(false);
-    // Save logic here
   };
 
   const handleCancel = () => {

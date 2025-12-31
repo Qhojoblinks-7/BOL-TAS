@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, RotateCcw, Eye, EyeOff, Mail, Phone, MapPin, Shield, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Trash2, RotateCcw, Eye, EyeOff, Mail, Phone, MapPin, Shield, CheckCircle, AlertCircle, Clock, UserCheck, QrCode } from 'lucide-react';
+import { getAllActiveAssignments, revokeAssignment } from '../../../utils/helpers';
 
 const AdminUsherManagement = () => {
+  const navigate = useNavigate();
   const [ushers, setUshers] = useState([
     {
       id: 'USH-001',
@@ -32,6 +35,7 @@ const AdminUsherManagement = () => {
   });
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+  const [tempAssignments, setTempAssignments] = useState([]);
 
   const locations = [
     'Main Campus',
@@ -46,9 +50,9 @@ const AdminUsherManagement = () => {
     { value: 'Senior', label: 'Senior - Full access including usher management' }
   ];
 
-  const generateTemporaryPassword = () => {
+  const generateTemporaryPassword = useCallback(() => {
     return Math.random().toString(36).substring(2, 10).toUpperCase();
-  };
+  }, []);
 
   const generateUsherId = () => {
     return `USH-${String(ushers.length + 1).padStart(3, '0')}`;
@@ -167,6 +171,52 @@ const AdminUsherManagement = () => {
     ));
   };
 
+  // Load temporary assignments
+  useEffect(() => {
+    const loadTempAssignments = () => {
+      const assignments = getAllActiveAssignments();
+      setTempAssignments(assignments);
+    };
+
+    loadTempAssignments();
+
+    // Listen for assignment changes
+    const handleAssignmentChange = () => {
+      loadTempAssignments();
+    };
+
+    window.addEventListener('tempUsherActivated', handleAssignmentChange);
+    window.addEventListener('tempUsherExpired', handleAssignmentChange);
+    window.addEventListener('assignmentCreated', handleAssignmentChange);
+
+    return () => {
+      window.removeEventListener('tempUsherActivated', handleAssignmentChange);
+      window.removeEventListener('tempUsherExpired', handleAssignmentChange);
+      window.removeEventListener('assignmentCreated', handleAssignmentChange);
+    };
+  }, []);
+
+  const handleRevokeTempAssignment = (assignmentId) => {
+    if (revokeAssignment(assignmentId)) {
+      setTempAssignments(tempAssignments.filter(a => a.id !== assignmentId));
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent('assignmentRevoked', { detail: { assignmentId } }));
+      setMessage('Temporary usher assignment has been revoked.');
+      setMessageType('success');
+      setTimeout(() => setMessage(''), 5000);
+    }
+  };
+
+  const formatExpirationTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <div className="flex-1 flex flex-col space-y-4 p-4 md:p-6">
       {/* Header */}
@@ -175,13 +225,22 @@ const AdminUsherManagement = () => {
           <h1 className="text-3xl font-bold text-black">Manage Ushers</h1>
           <p className="text-sm text-gray-600 mt-1">Create and manage usher accounts and permissions</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
-        >
-          <Plus size={20} />
-          Create Usher Account
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate('/usher')}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
+          >
+            <QrCode size={20} />
+            Access Usher Terminal
+          </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
+          >
+            <Plus size={20} />
+            Create Usher Account
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -416,6 +475,63 @@ const AdminUsherManagement = () => {
         {ushers.length === 0 && (
           <div className="text-center py-8">
             <p className="text-gray-500">No ushers created yet. Click the button above to create one.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Temporary Assignments Section */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <UserCheck size={24} className="text-green-600" />
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Active Temporary Assignments</h2>
+              <p className="text-sm text-gray-600">Members currently assigned usher duties</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-green-50 border-b border-gray-200">
+                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Member Name</th>
+                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Member ID</th>
+                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Assigned By</th>
+                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Expires At</th>
+                <th className="px-4 py-3 text-left text-sm font-bold text-gray-900">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tempAssignments.map((assignment, index) => (
+                <tr key={assignment.id} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-green-50/50 transition-colors`}>
+                  <td className="px-4 py-3 text-sm text-gray-900 font-medium">{assignment.memberName}</td>
+                  <td className="px-4 py-3 text-sm font-mono text-gray-600">{assignment.memberId}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{assignment.assignedBy}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2">
+                    <Clock size={14} className="text-orange-500" />
+                    {formatExpirationTime(assignment.expiration)}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <button
+                      onClick={() => handleRevokeTempAssignment(assignment.id)}
+                      title="Revoke Assignment"
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {tempAssignments.length === 0 && (
+          <div className="text-center py-8">
+            <UserCheck size={48} className="text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No active temporary assignments.</p>
+            <p className="text-sm text-gray-400 mt-1">Assign members from the Members page to see them here.</p>
           </div>
         )}
       </div>
