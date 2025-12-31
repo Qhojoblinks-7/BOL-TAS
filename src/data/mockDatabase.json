@@ -1,0 +1,205 @@
+{
+  "users": [
+    {
+      "id": "user_001",
+      "name": "John Doe",
+      "email": "john@email.com",
+      "password": "password123",
+      "role": "teen",
+      "personalCode": "12345",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "profile": {
+        "fullName": "John Doe",
+        "preferredName": "John",
+        "dateOfBirth": "2008-05-15",
+        "gender": "Male",
+        "phoneNumber": "(555) 123-4567",
+        "guardianName": "Michael Doe",
+        "guardianPhone": "(555) 987-6543",
+        "guardianEmail": "michael@email.com",
+        "emergencyContact": "Sarah Doe - (555) 222-3333",
+        "ministry": "Youth Choir",
+        "membershipStatus": "Active Member",
+        "spiritualMilestones": "Baptized - 2018",
+        "parentalConsent": true,
+        "privacySettings": "Friends Only",
+        "attendanceRecords": "45/52 (86%)",
+        "volunteerRoles": "Ushering, Tech Team",
+        "points": "2,450"
+      }
+    },
+    {
+      "id": "user_002",
+      "name": "John Smith",
+      "email": "johnsmith@email.com",
+      "password": "password123",
+      "role": "teen",
+      "personalCode": "67890",
+      "createdAt": "2024-02-20T14:30:00Z",
+      "profile": {
+        "fullName": "John Smith",
+        "preferredName": "Johnny",
+        "dateOfBirth": "2007-08-22",
+        "gender": "Male",
+        "phoneNumber": "(555) 234-5678",
+        "guardianName": "David Smith",
+        "guardianPhone": "(555) 876-5432",
+        "guardianEmail": "david@email.com",
+        "emergencyContact": "Lisa Smith - (555) 333-4444",
+        "ministry": "Bible Study",
+        "membershipStatus": "Active Member",
+        "spiritualMilestones": "Confirmed - 2020",
+        "parentalConsent": true,
+        "privacySettings": "Private",
+        "attendanceRecords": "38/52 (73%)",
+        "volunteerRoles": "Sound Team",
+        "points": "1,890"
+      }
+    },
+    {
+      "id": "user_003",
+      "name": "Jane Doe",
+      "email": "jane@email.com",
+      "password": "password123",
+      "role": "teen",
+      "personalCode": "54321",
+      "createdAt": "2024-03-10T09:15:00Z",
+      "profile": {
+        "fullName": "Jane Doe",
+        "preferredName": "Jane",
+        "dateOfBirth": "2009-12-03",
+        "gender": "Female",
+        "phoneNumber": "(555) 345-6789",
+        "guardianName": "Sarah Doe",
+        "guardianPhone": "(555) 765-4321",
+        "guardianEmail": "sarah@email.com",
+        "emergencyContact": "Michael Doe - (555) 222-3333",
+        "ministry": "Praise & Worship",
+        "membershipStatus": "Active Member",
+        "spiritualMilestones": "Baptized - 2021",
+        "parentalConsent": true,
+        "privacySettings": "Friends Only",
+        "attendanceRecords": "51/52 (98%)",
+        "volunteerRoles": "Choir, Ushering",
+        "points": "3,200"
+      }
+    },
+    {
+      "id": "user_004",
+      "name": "Admin User",
+      "email": "admin@bol-tas.com",
+      "password": "admin123",
+      "role": "admin",
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "user_005",
+      "name": "Temp Usher",
+      "email": "usher@bol-tas.com",
+      "password": "usher123",
+      "role": "tempUsher",
+      "personalCode": "11111",
+      "expirationTimestamp": 1735689600000,
+      "createdAt": "2024-12-30T10:00:00Z"
+    }
+  ],
+  "attendanceRecords": [
+    {
+      "id": "att_001",
+      "userId": "user_001",
+      "method": "QR Scan",
+      "timestamp": "2024-12-25T10:30:00Z",
+      "service": "Sunday Service",
+      "location": "Main Sanctuary"
+    },
+    {
+      "id": "att_002",
+      "userId": "user_001",
+      "method": "Personal Code Entry",
+      "timestamp": "2024-12-18T10:30:00Z",
+      "service": "Sunday Service",
+      "location": "Main Sanctuary"
+    },
+    {
+      "id": "att_003",
+      "userId": "user_002",
+      "method": "Smart Search",
+      "timestamp": "2024-12-25T10:35:00Z",
+      "service": "Sunday Service",
+      "location": "Main Sanctuary"
+    },
+    {
+      "id": "att_004",
+      "userId": "user_003",
+      "method": "QR Scan",
+      "timestamp": "2024-12-25T10:32:00Z",
+      "service": "Sunday Service",
+      "location": "Main Sanctuary"
+    }
+  ],
+  "usherAssignments": [
+    {
+      "id": "assign_001",
+      "userId": "user_005",
+      "assignedBy": "user_004",
+      "assignedAt": "2024-12-30T10:00:00Z",
+      "expiresAt": "2024-12-31T12:00:00Z",
+      "status": "active"
+    }
+  ],
+  "churchMembers": [
+    {
+      "id": "member_001",
+      "name": "John Doe",
+      "area": "Greenwood",
+      "parent": "Michael Doe",
+      "birthYear": "2009",
+      "personalCode": "12345"
+    },
+    {
+      "id": "member_002",
+      "name": "John Smith",
+      "area": "Riverside",
+      "parent": "David Smith",
+      "birthYear": "2008",
+      "personalCode": "67890"
+    },
+    {
+      "id": "member_003",
+      "name": "Jane Doe",
+      "area": "Hillcrest",
+      "parent": "Sarah Doe",
+      "birthYear": "2010",
+      "personalCode": "54321"
+    }
+  ],
+  "weeklyAttendance": [
+    {
+      "week": "2024-W52",
+      "date": "2024-12-25",
+      "service": "Sunday Service",
+      "totalAttendees": 3,
+      "location": "Main Sanctuary",
+      "attendees": ["user_001", "user_002", "user_003"]
+    },
+    {
+      "week": "2024-W51",
+      "date": "2024-12-18",
+      "service": "Sunday Service",
+      "totalAttendees": 2,
+      "location": "Main Sanctuary",
+      "attendees": ["user_001", "user_003"]
+    }
+  ],
+  "shepherdingContacts": [
+    {
+      "id": "contact_001",
+      "shepherd": "user_004",
+      "member": "user_001",
+      "contactMethod": "phone",
+      "contactInfo": "(555) 123-4567",
+      "lastContact": "2024-12-20T15:00:00Z",
+      "notes": "Discussed youth group participation"
+    }
+  ]
+}

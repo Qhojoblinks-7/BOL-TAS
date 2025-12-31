@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn } from 'lucide-react';
+import { getAll } from '../../utils/database';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -53,28 +54,25 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      // Check against stored user account
-      const storedAccount = localStorage.getItem('userAccount');
+      // Check against users in database
+      const users = getAll('users');
+      const user = users.find(u => u.email === formData.email && u.password === formData.password);
 
-      if (!storedAccount) {
-        setErrors({ submit: 'No account found. Please create an account first.' });
-        return;
-      }
-
-      const userAccount = JSON.parse(storedAccount);
-
-      if (userAccount.email !== formData.email || userAccount.password !== formData.password) {
+      if (!user) {
         setErrors({ submit: 'Invalid email or password.' });
         return;
       }
 
+      // Store current user session
+      localStorage.setItem('userAccount', JSON.stringify(user));
+
       // Successful login - dispatch event to update app state
-      window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: userAccount }));
+      window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: user }));
 
       // Navigate to dashboard
       navigate('/');
 
-    } catch (error) {
+    } catch {
       setErrors({ submit: 'Login failed. Please try again.' });
     } finally {
       setIsSubmitting(false);

@@ -8,7 +8,7 @@ import AttendanceTab from './AttendanceTab';
 import { SideDrawer, SideDrawerContent, SideDrawerHeader, SideDrawerTrigger, SideDrawerClose } from '@/components/shared/ui/side-drawer';
 import { Home, Settings, Shield, Edit, LogOut, Menu, UserCheck, Calendar } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/shared/ui/avatar';
-import { getActiveAssignmentForEmail } from '../../../utils/helpers';
+import { getUsherAssignmentForEmail } from '../../../utils/database';
 import UsherActivationModal from './UsherActivationModal';
 
 // Generate unique 5-digit personal code
@@ -73,7 +73,7 @@ const TeenPortal = () => {
         const account = JSON.parse(userAccount);
         const email = account.email;
         if (email) {
-          const assignment = getActiveAssignmentForEmail(email);
+          const assignment = getUsherAssignmentForEmail(email);
           setHasUsherAssignment(!!assignment);
           // Store assignment for modal if needed
           setCurrentMemberId(assignment ? assignment.memberId : null);

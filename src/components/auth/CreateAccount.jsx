@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Shield, Users, UserCheck } from 'lucide-react';
+import { add, getAll } from '../../utils/database';
 
 const CreateAccount = () => {
   const navigate = useNavigate();
@@ -13,6 +14,16 @@ const CreateAccount = () => {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const generateUniquePersonalCode = () => {
+    const users = getAll('users');
+    const existingCodes = users.map(user => user.personalCode);
+    let code;
+    do {
+      code = Math.floor(10000 + Math.random() * 90000).toString();
+    } while (existingCodes.includes(code));
+    return code;
+  };
 
   const roles = [
     { value: 'teen', label: 'Teen Member', icon: User, description: 'Access to Teen Portal and BOL-Key' },
@@ -79,14 +90,22 @@ const CreateAccount = () => {
       // Simulate account creation
       await new Promise(resolve => setTimeout(resolve, 2000));
 
+      // Generate unique personal code for all users
+      const personalCode = generateUniquePersonalCode();
+
       // Store user data (in a real app, this would be sent to backend)
       const userData = {
         ...formData,
-        id: Date.now(),
+        id: `user_${Date.now()}`,
+        personalCode,
         createdAt: new Date().toISOString(),
         bolKey: formData.role === 'teen' ? `${new Date().getFullYear() % 100}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}` : null
       };
 
+      // Add user to database
+      add('users', userData);
+
+      // Store current user session in localStorage
       localStorage.setItem('userAccount', JSON.stringify(userData));
 
       // Dispatch custom event to notify App component of account creation
@@ -107,7 +126,7 @@ const CreateAccount = () => {
           navigate('/');
       }
 
-    } catch (error) {
+    } catch {
       setErrors({ submit: 'Account creation failed. Please try again.' });
     } finally {
       setIsSubmitting(false);

@@ -32,6 +32,15 @@ const Sidebar = ({ className, onToggle }) => {
     }
   };
 
+  const handleLogout = () => {
+    // Clear user session
+    localStorage.removeItem('userAccount');
+    // Dispatch logout event
+    window.dispatchEvent(new CustomEvent('userLoggedOut'));
+    // Navigate to login
+    navigate('/login');
+  };
+
   return (
     <>
       {/* Toggle Badge - Positioned on the edge */}
@@ -100,6 +109,7 @@ const Sidebar = ({ className, onToggle }) => {
               isCollapsed ? "justify-center px-2" : "justify-start"
             )}
             title={isCollapsed ? "Logout" : undefined}
+            onClick={handleLogout}
           >
             <LogOut className={cn("h-4 w-4", !isCollapsed && "mr-2")} />
             {!isCollapsed && <span>Logout</span>}

@@ -8,8 +8,16 @@ import BOLKeyTab from './BOLKeyTab';
 import SearchTab from './SearchTab';
 import SuccessOverlay from './SuccessOverlay';
 import UndoButton from './UndoButton';
+import { useGetChurchMembersQuery } from '../../../services/membersApi';
+import { useGetUsersQuery } from '../../../services/usersApi';
+import { useAddAttendanceRecordMutation } from '../../../services/attendanceApi';
 
 const UsherTerminal = () => {
+  // RTK Query hooks
+  const { data: churchMembers = [] } = useGetChurchMembersQuery();
+  const { data: users = [] } = useGetUsersQuery();
+  const [addAttendanceRecord] = useAddAttendanceRecordMutation();
+
   const [activeTab, setActiveTab] = useState('qr');
   const [scanResult, setScanResult] = useState('');
   const [bolKeyInput, setBolKeyInput] = useState('');
@@ -30,11 +38,6 @@ const UsherTerminal = () => {
   const [scanError, setScanError] = useState(null);
   const scannerInstance = useRef(null);
 
-  const mockMembers = [
-    { id: 1, name: 'John Doe', area: 'Greenwood', parent: 'Michael Doe', birthYear: '2009', personalCode: '12345' },
-    { id: 2, name: 'John Smith', area: 'Riverside', parent: 'David Smith', birthYear: '2008', personalCode: '67890' },
-    { id: 3, name: 'Jane Doe', area: 'Hillcrest', parent: 'Sarah Doe', birthYear: '2010', personalCode: '54321' },
-  ];
 
   const handleExpiration = () => {
     setIsExpired(true);
@@ -107,7 +110,7 @@ const UsherTerminal = () => {
 
   const lookupMember = (code) => {
     // Lookup member by personalCode (5-digit)
-    return mockMembers.find(member => member.personalCode === code) || null;
+    return churchMembers.find(member => member.personalCode === code);
   };
 
   const onScanSuccess = (decodedText) => {
@@ -132,20 +135,25 @@ const UsherTerminal = () => {
     setShowConfirmation(true);
   };
 
-  const handleConfirmCheckIn = () => {
-    const now = new Date();
-    const timestamp = now.getTime();
-    const checkIn = {
-      method: 'QR Scan',
-      key: scanResult,
-      name: scannedMember.name,
-      area: scannedMember.area,
-      parent: scannedMember.parent,
-      time: now.toLocaleTimeString(),
-      timestamp
-    };
-    setAttendanceLog(prev => [...prev, checkIn]);
-    setLastCheckIn(checkIn);
+  const handleConfirmCheckIn = async () => {
+    // Find user by personal code
+    const user = users.find(u => u.personalCode === scanResult);
+    if (user) {
+      try {
+        const record = await addAttendanceRecord({
+          userId: user.id,
+          method: 'QR Scan',
+          service: 'Sunday Service',
+          location: 'Main Sanctuary'
+        }).unwrap();
+        setAttendanceLog(prev => [...prev, record]);
+        setLastCheckIn(record);
+      } catch (error) {
+        console.error('Failed to add attendance record:', error);
+        setScanError('Failed to record attendance. Please try again.');
+        return;
+      }
+    }
     setShowSuccessOverlay(true);
     setTimeout(() => setShowSuccessOverlay(false), 3000);
     setShowUndo(true);
@@ -223,7 +231,7 @@ const UsherTerminal = () => {
   };
 
   const handleSearch = () => {
-    const results = mockMembers.filter(member =>
+    const results = churchMembers.filter(member =>
       member.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setSearchResults(results);
