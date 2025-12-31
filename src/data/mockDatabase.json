@@ -145,6 +145,14 @@
       "assignedAt": "2024-12-30T10:00:00Z",
       "expiresAt": "2024-12-31T12:00:00Z",
       "status": "active"
+    },
+    {
+      "id": "assign_002",
+      "userId": "user_001",
+      "assignedBy": "user_004",
+      "assignedAt": "2024-12-30T10:00:00Z",
+      "expiresAt": "2024-12-31T12:00:00Z",
+      "status": "active"
     }
   ],
   "churchMembers": [

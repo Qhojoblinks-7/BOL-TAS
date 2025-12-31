@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, Save, X, HelpCircle, MessageSquare, Shield, Trophy, BookOpen, User, Mail, Church, Lock, Compass } from 'lucide-react';
+import { useGetUserByIdQuery } from '../../../services/usersApi';
 
 const EditProfile = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Load profile data from localStorage
-  const loadProfileData = () => {
+  // Get current user from localStorage
+  const getCurrentUser = () => {
+    const userAccount = localStorage.getItem('userAccount');
+    return userAccount ? JSON.parse(userAccount) : null;
+  };
+
+  const currentUser = getCurrentUser();
+
+  // Load fallback data from localStorage
+  const getFallbackData = () => {
     const stored = localStorage.getItem('teenProfile');
     if (stored) {
       return JSON.parse(stored);
@@ -35,36 +45,78 @@ const EditProfile = () => {
     };
   };
 
-  const initialData = loadProfileData();
+  const { data: userData } = useGetUserByIdQuery(currentUser?.id, {
+    skip: !currentUser?.id
+  });
+
+  const [profileData, setProfileData] = useState(null);
+
+  useEffect(() => {
+    if (userData?.profile) {
+      setProfileData({
+        ...userData.profile,
+        email: userData.email,
+        fullName: userData.profile.fullName || userData.name
+      });
+    } else {
+      // Fallback to localStorage or defaults
+      setProfileData(getFallbackData());
+    }
+  }, [userData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Personal Information
-  const [fullName, setFullName] = useState(initialData.fullName);
-  const [preferredName, setPreferredName] = useState(initialData.preferredName);
-  const [dateOfBirth, setDateOfBirth] = useState(initialData.dateOfBirth);
-  const [gender, setGender] = useState(initialData.gender);
-  const [profilePhoto, setProfilePhoto] = useState(initialData.profilePhoto);
+  const [fullName, setFullName] = useState('');
+  const [preferredName, setPreferredName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [gender, setGender] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState(null);
 
   // Contact & Guardian Info
-  const [email, setEmail] = useState(initialData.email);
-  const [phoneNumber, setPhoneNumber] = useState(initialData.phoneNumber);
-  const [guardianName, setGuardianName] = useState(initialData.guardianName);
-  const [guardianPhone, setGuardianPhone] = useState(initialData.guardianPhone);
-  const [guardianEmail, setGuardianEmail] = useState(initialData.guardianEmail);
-  const [emergencyContact, setEmergencyContact] = useState(initialData.emergencyContact);
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [guardianName, setGuardianName] = useState('');
+  const [guardianPhone, setGuardianPhone] = useState('');
+  const [guardianEmail, setGuardianEmail] = useState('');
+  const [emergencyContact, setEmergencyContact] = useState('');
 
   // Church Engagement
-  const [ministry, setMinistry] = useState(initialData.ministry);
-  const [membershipStatus, setMembershipStatus] = useState(initialData.membershipStatus);
-  const [spiritualMilestones, setSpiritualMilestones] = useState(initialData.spiritualMilestones);
+  const [ministry, setMinistry] = useState('');
+  const [membershipStatus, setMembershipStatus] = useState('');
+  const [spiritualMilestones, setSpiritualMilestones] = useState('');
 
   // Permissions & Safety
-  const [parentalConsent, setParentalConsent] = useState(initialData.parentalConsent);
-  const [privacySettings, setPrivacySettings] = useState(initialData.privacySettings);
+  const [parentalConsent, setParentalConsent] = useState(true);
+  const [privacySettings, setPrivacySettings] = useState('');
 
   // Service-Specific Features
-  const [attendanceRecords, setAttendanceRecords] = useState(initialData.attendanceRecords);
-  const [volunteerRoles, setVolunteerRoles] = useState(initialData.volunteerRoles);
-  const [points, setPoints] = useState(initialData.points);
+  const [attendanceRecords, setAttendanceRecords] = useState('');
+  const [volunteerRoles, setVolunteerRoles] = useState('');
+  const [points, setPoints] = useState('');
+
+  // Update form fields when profileData loads
+  useEffect(() => {
+    if (profileData) {
+      setFullName(profileData.fullName || '');
+      setPreferredName(profileData.preferredName || '');
+      setDateOfBirth(profileData.dateOfBirth || '');
+      setGender(profileData.gender || '');
+      setProfilePhoto(profileData.profilePhoto || null);
+      setEmail(profileData.email || '');
+      setPhoneNumber(profileData.phoneNumber || '');
+      setGuardianName(profileData.guardianName || '');
+      setGuardianPhone(profileData.guardianPhone || '');
+      setGuardianEmail(profileData.guardianEmail || '');
+      setEmergencyContact(profileData.emergencyContact || '');
+      setMinistry(profileData.ministry || '');
+      setMembershipStatus(profileData.membershipStatus || '');
+      setSpiritualMilestones(profileData.spiritualMilestones || '');
+      setParentalConsent(profileData.parentalConsent ?? true);
+      setPrivacySettings(profileData.privacySettings || '');
+      setAttendanceRecords(profileData.attendanceRecords || '');
+      setVolunteerRoles(profileData.volunteerRoles || '');
+      setPoints(profileData.points || '');
+    }
+  }, [profileData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = () => {
     const profileData = {
