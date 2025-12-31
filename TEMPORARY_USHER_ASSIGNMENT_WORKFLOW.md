@@ -33,7 +33,7 @@ graph TD
     N --> O[New 'Usher Duty' Button Appears]
     O --> P[Button Shows Active Status]
 
-    P --> Q[Member Clicks "Usher Duty" Button]
+    P --> Q[Member Clicks 'Usher Duty' Button]
     Q --> R[Popup Modal Appears]
     R --> S[Credential Input Fields]
     S --> T[Enter Admin-Provided Credentials]

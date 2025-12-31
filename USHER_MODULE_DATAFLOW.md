@@ -65,9 +65,9 @@ graph TD
     QQ --> RR
 
     RR --> SS[Timestamp Generation]
-    SS --> TT[new Date().getTime()]
+    SS --> TT["new Date().getTime()"]
     TT --> UU[Check-in Object Creation]
-    UU --> VV{method, key/name, time, timestamp}
+    UU --> VV["{method, key/name, time, timestamp}"]
     VV --> WW[Add to attendanceLog]
     WW --> XX[Update lastCheckIn]
     XX --> YY[localStorage Persistence]
