@@ -79,11 +79,13 @@ function App() {
   }, [userRole]);
 
   return (
-    <BrowserRouter future={{ v7_startTransition: true }}>
-
-      {/* Role-Based Routes */}
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
-        {/* Admin Routes */}
+        {/* Authentication Routes - Always Available */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/create-account" element={<CreateAccount />} />
+
+        {/* Protected Routes - Role-Based */}
         {userRole === 'admin' && (
           <>
             <Route path="/" element={<AdminLayout><AdminMain /></AdminLayout>} />
@@ -93,10 +95,10 @@ function App() {
             <Route path="/attendance" element={<AdminLayout><AttendancePage /></AdminLayout>} />
             <Route path="/ushers" element={<AdminLayout><UshersPage /></AdminLayout>} />
             <Route path="/shepherding" element={<AdminLayout><ShepherdingPage /></AdminLayout>} />
+            <Route path="/usher" element={<UsherTerminal />} />
           </>
         )}
 
-        {/* Teen Routes */}
         {userRole === 'teen' && (
           <>
             <Route path="/" element={<TeenPortal />} />
@@ -104,28 +106,36 @@ function App() {
           </>
         )}
 
-        {/* Usher Routes */}
-        {(userRole === 'usher' || userRole === 'admin') && (
-          <Route path="/usher" element={<UsherTerminal />} />
-        )}
-
-        {/* TempUsher Routes */}
         {userRole === 'tempUsher' && (
           <Route path="/" element={<UsherTerminal />} />
         )}
 
-        {/* Default/Auth Routes */}
+        {(userRole === 'usher' || userRole === 'admin') && (
+          <Route path="/usher" element={<UsherTerminal />} />
+        )}
+
+        {/* Default Routes - When no role or guest */}
         {(!userRole || userRole === 'guest') && (
           <>
             <Route path="/" element={<CreateAccount />} />
-            <Route path="/create-account" element={<CreateAccount />} />
-            <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<AdminLayout><AdminMain /></AdminLayout>} />
             <Route path="/teen" element={<TeenPortal />} />
             <Route path="/teen/edit-profile" element={<EditProfile />} />
             <Route path="/usher" element={<UsherTerminal />} />
           </>
         )}
+
+        {/* Fallback Route */}
+        <Route path="*" element={
+          userRole ? (
+            userRole === 'admin' ? <AdminLayout><AdminMain /></AdminLayout> :
+            userRole === 'teen' ? <TeenPortal /> :
+            userRole === 'tempUsher' ? <UsherTerminal /> :
+            <CreateAccount />
+          ) : (
+            <CreateAccount />
+          )
+        } />
       </Routes>
     </BrowserRouter>
   );

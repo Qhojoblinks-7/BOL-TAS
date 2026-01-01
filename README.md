@@ -34,6 +34,9 @@ graph TB
     H --> H1[Teen Portal]
     H --> H2[Profile Edit]
     H --> H3[Security/Recovery]
+    H --> H4[Attendance History]
+    H --> H5[Help & FAQ]
+    H --> H6[Church Guidelines]
 
     I --> I1[Usher Terminal]
     I --> I2[QR Scanning]
@@ -95,7 +98,12 @@ graph TD
 
     I --> O[Teen Components]
     O --> P[localStorage: Profile Data]
-    P --> Q[UI Rendering]
+    P --> Q[Database: Attendance Records]
+    Q --> R[Dynamic Calculations]
+    R --> S[UI Rendering]
+    O --> T[Cross-Page Navigation]
+    T --> U[State Persistence]
+    U --> V[Seamless Transitions]
 
     J --> R[Usher Components]
     R --> S[QR Scanner]
@@ -209,15 +217,21 @@ graph TD
 
 ### 👦 Teen Role
 **Portal Features:**
-- Personal profile management
+- Personal profile management with dynamic attendance/volunteer tracking
 - Security settings and recovery options
-- Attendance history viewing
-- ID card display
+- Comprehensive attendance history with real-time calculations
+- ID card display with QR code generation
+- Help & FAQ system with searchable guidance
+- Church guidelines and code of conduct
+- Cross-page navigation between profile and support sections
 
 **Data Operations:**
-- localStorage profile persistence
-- Form-based data updates
+- localStorage profile persistence with database integration
+- Real-time attendance record calculation from database
+- Dynamic volunteer role detection (active assignments + profile data)
+- Form-based data updates with validation
 - Recovery method configuration
+- Cross-page state management for seamless navigation
 
 ### 👨‍🏫 Usher Role
 **Terminal Features:**
@@ -244,6 +258,12 @@ graph TD
 - Smart search with member lookup
 - localStorage session management
 - CSV export functionality
+- Dynamic attendance record calculation
+- Real-time volunteer role detection
+- Help & FAQ system with cross-page navigation
+- Church guidelines and code of conduct
+- Database integration for attendance tracking
+- Accessibility compliance (WCAG standards)
 
 #### ⚠️ Partially Implemented
 - Redux store (configured but unused)
@@ -264,10 +284,12 @@ graph TD
 4. **Firebase Integration** - Backend services (planned)
 
 #### Data Operations
-- **Read:** Array filtering, searching, computed statistics
-- **Write:** Array manipulation, localStorage updates
+- **Read:** Array filtering, searching, computed statistics, database queries
+- **Write:** Array manipulation, localStorage updates, database record creation
+- **Calculate:** Dynamic attendance percentages, volunteer role detection
+- **Navigate:** Cross-page state management, seamless transitions
 - **Export:** CSV generation, blob downloads
-- **Validation:** Client-side form checks, regex validation
+- **Validate:** Client-side form checks, regex validation, data integrity
 
 ## 🚀 Getting Started
 
@@ -355,11 +377,25 @@ bol-tas/
 - Cloud functions for business logic
 
 ### Advanced Features
+- ✅ Help & FAQ system with searchable guidance
+- ✅ Church guidelines and code of conduct
+- ✅ Dynamic attendance tracking and reporting
+- ✅ Real-time volunteer role management
+- ✅ Cross-page navigation and state management
 - Real-time attendance notifications
 - Advanced analytics and reporting
 - Mobile app companion
 - Multi-church support
 - API integrations
+
+### User Support & Accessibility
+- ✅ Comprehensive Help & FAQ system
+- ✅ Church guidelines and code of conduct
+- ✅ Cross-page navigation assistance
+- ✅ WCAG accessibility compliance
+- ✅ Screen reader support
+- ✅ Keyboard navigation
+- ✅ Focus management
 
 ### Performance Optimizations
 - Code splitting by role

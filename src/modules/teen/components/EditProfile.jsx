@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera, Save, X, HelpCircle, MessageSquare, Shield, Trophy, BookOpen, User, Mail, Church, Lock, Compass } from 'lucide-react';
 import { useGetUserByIdQuery } from '../../../services/usersApi';
+import { getUserAttendance, getUsherAssignmentForEmail } from '../../../utils/database';
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -92,6 +93,39 @@ const EditProfile = () => {
   const [attendanceRecords, setAttendanceRecords] = useState('');
   const [volunteerRoles, setVolunteerRoles] = useState('');
   const [points, setPoints] = useState('');
+
+  // Dynamic data
+  const [calculatedAttendance, setCalculatedAttendance] = useState('');
+  const [activeVolunteerRoles, setActiveVolunteerRoles] = useState('');
+
+  // Calculate dynamic attendance and volunteer data
+  useEffect(() => {
+    if (currentUser?.id) {
+      // Calculate attendance records
+      const attendanceData = getUserAttendance(currentUser.id);
+      const totalWeeks = 52; // Assuming yearly calculation
+      const attendedWeeks = attendanceData.length;
+      const attendanceRate = totalWeeks > 0 ? Math.round((attendedWeeks / totalWeeks) * 100) : 0;
+      setCalculatedAttendance(`${attendedWeeks}/${totalWeeks} (${attendanceRate}%)`);
+
+      // Calculate active volunteer roles
+      const roles = [];
+      const usherAssignment = getUsherAssignmentForEmail(currentUser.email);
+      if (usherAssignment) {
+        roles.push('Usher (Active)');
+      }
+
+      // Add profile-based roles
+      if (profileData?.volunteerRoles) {
+        const profileRoles = profileData.volunteerRoles.split(', ').filter(role =>
+          !roles.some(activeRole => activeRole.includes(role.trim()))
+        );
+        roles.push(...profileRoles);
+      }
+
+      setActiveVolunteerRoles(roles.length > 0 ? roles.join(', ') : 'None');
+    }
+  }, [currentUser, profileData]);
 
   // Update form fields when profileData loads
   useEffect(() => {
@@ -366,11 +400,11 @@ const EditProfile = () => {
           <div className="space-y-3">
             <div className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
               <p className="text-sm text-gray-600">Attendance Records</p>
-              <p className="text-lg font-bold text-blue-700">{attendanceRecords}</p>
+              <p className="text-lg font-bold text-blue-700">{calculatedAttendance || attendanceRecords}</p>
             </div>
             <div className="p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
               <p className="text-sm text-gray-600">Volunteer Roles</p>
-              <p className="text-lg font-bold text-purple-700">{volunteerRoles}</p>
+              <p className="text-lg font-bold text-purple-700">{activeVolunteerRoles || volunteerRoles}</p>
             </div>
           </div>
         </div>
@@ -381,13 +415,27 @@ const EditProfile = () => {
             <Compass size={24} className="text-[hsl(186,70%,34%)]" /> Support & Guidance
           </h3>
           <div className="space-y-3">
-            <button className="w-full p-4 border-2 border-[hsl(186,70%,34%)]/30 rounded-lg hover:bg-[hsl(186,70%,34%)]/5 transition-all active:scale-95 text-left">
+            <button
+              onClick={() => {
+                // Navigate to main portal and set guidelines tab as active
+                localStorage.setItem('activeTab', 'guidelines');
+                navigate('/');
+              }}
+              className="w-full p-4 border-2 border-[hsl(186,70%,34%)]/30 rounded-lg hover:bg-[hsl(186,70%,34%)]/5 transition-all active:scale-95 text-left"
+            >
               <h4 className="font-semibold text-black mb-1 flex items-center gap-2">
                 <BookOpen size={18} /> Church Guidelines
               </h4>
               <p className="text-sm text-gray-600">View youth code of conduct and policies</p>
             </button>
-            <button className="w-full p-4 border-2 border-[hsl(186,70%,34%)]/30 rounded-lg hover:bg-[hsl(186,70%,34%)]/5 transition-all active:scale-95 text-left">
+            <button
+              onClick={() => {
+                // Navigate to main portal and set help tab as active
+                localStorage.setItem('activeTab', 'help');
+                navigate('/');
+              }}
+              className="w-full p-4 border-2 border-[hsl(186,70%,34%)]/30 rounded-lg hover:bg-[hsl(186,70%,34%)]/5 transition-all active:scale-95 text-left"
+            >
               <h4 className="font-semibold text-black mb-1 flex items-center gap-2">
                 <HelpCircle size={18} /> Help & FAQ
               </h4>

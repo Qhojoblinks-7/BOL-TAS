@@ -1,62 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import { getAll } from '../../utils/database';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
+  // Validation schema with Yup
+  const validationSchema = Yup.object({
+    email: Yup.string()
+      .trim()
+      .required('Email is required')
+      .email('Email is invalid'),
+    password: Yup.string()
+      .required('Password is required')
+  });
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     setIsSubmitting(true);
 
     try {
       // Check against users in database
       const users = getAll('users');
-      const user = users.find(u => u.email === formData.email && u.password === formData.password);
+      const user = users.find(u => u.email === values.email && u.password === values.password);
 
       if (!user) {
         setErrors({ submit: 'Invalid email or password.' });
@@ -87,7 +56,13 @@ const Login = () => {
       setErrors({ submit: 'Login failed. Please try again.' });
     } finally {
       setIsSubmitting(false);
+      setSubmitting(false);
     }
+  };
+
+  const initialValues = {
+    email: '',
+    password: ''
   };
 
   return (
@@ -107,70 +82,72 @@ const Login = () => {
       <main className="flex-1 p-4">
         <div className="max-w-md mx-auto">
           <div className="bg-white/80 backdrop-blur-md rounded-lg p-6 shadow-lg border border-gray-300">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email Field */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-[#d1e5e6] focus:border-[#d1e5e6] ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter your email"
-                  />
-                </div>
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-              </div>
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              onSubmit={handleSubmit}
+            >
+              {({ isSubmitting: formikSubmitting, errors: formikErrors }) => (
+                <Form className="space-y-4">
+                  {/* Email Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <Field
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-[#d1e5e6] focus:border-[#d1e5e6] border-gray-300"
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                    <ErrorMessage name="email" component="p" className="text-red-500 text-sm mt-1" />
+                  </div>
 
-              {/* Password Field */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-[#d1e5e6] focus:border-[#d1e5e6] ${
-                      errors.password ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter your password"
-                  />
-                </div>
-                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-              </div>
+                  {/* Password Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <Field
+                        type="password"
+                        name="password"
+                        autoComplete="current-password"
+                        className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-[#d1e5e6] focus:border-[#d1e5e6] border-gray-300"
+                        placeholder="Enter your password"
+                      />
+                    </div>
+                    <ErrorMessage name="password" component="p" className="text-red-500 text-sm mt-1" />
+                  </div>
 
-              {errors.submit && <p className="text-red-500 text-sm">{errors.submit}</p>}
+                  {formikErrors.submit && <p className="text-red-500 text-sm">{formikErrors.submit}</p>}
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-[#d1e5e6] text-black py-3 px-4 rounded-lg hover:bg-opacity-80 active:bg-opacity-90 active:scale-95 transition-all duration-100 touch-manipulation font-bold disabled:opacity-50 flex items-center justify-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
-                    Signing In...
-                  </>
-                ) : (
-                  <>
-                    <LogIn size={20} className="mr-2" />
-                    Sign In
-                  </>
-                )}
-              </button>
-            </form>
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || formikSubmitting}
+                    className="w-full bg-[#d1e5e6] text-black py-3 px-4 rounded-lg hover:bg-opacity-80 active:bg-opacity-90 active:scale-95 transition-all duration-100 touch-manipulation font-bold disabled:opacity-50 flex items-center justify-center"
+                  >
+                    {isSubmitting || formikSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
+                        Signing In...
+                      </>
+                    ) : (
+                      <>
+                        <LogIn size={20} className="mr-2" />
+                        Sign In
+                      </>
+                    )}
+                  </button>
+                </Form>
+              )}
+            </Formik>
 
             {/* Create Account Link */}
             <div className="mt-4 text-center">

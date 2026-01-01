@@ -5,8 +5,10 @@ import IdTab from './IdTab';
 import SecurityTab from './SecurityTab';
 import RecoveryTab from './RecoveryTab';
 import AttendanceTab from './AttendanceTab';
-import { SideDrawer, SideDrawerContent, SideDrawerHeader, SideDrawerTrigger, SideDrawerClose } from '@/components/shared/ui/side-drawer';
-import { Home, Settings, Shield, Edit, LogOut, Menu, UserCheck, Calendar } from 'lucide-react';
+import HelpTab from './HelpTab';
+import ChurchGuidelinesTab from './ChurchGuidelinesTab';
+import { SideDrawer, SideDrawerContent, SideDrawerHeader, SideDrawerTitle, SideDrawerDescription, SideDrawerTrigger, SideDrawerClose } from '@/components/shared/ui/side-drawer';
+import { QrCode, Settings, Shield, Edit, LogOut, Menu, UserCheck, Calendar, HelpCircle, BookOpen } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/shared/ui/avatar';
 import { getUsherAssignmentForEmail } from '../../../utils/database';
 import UsherActivationModal from './UsherActivationModal';
@@ -41,7 +43,10 @@ const TeenPortal = () => {
     return newCode;
   });
   const [qrCode, setQrCode] = useState('');
-  const [activeTab, setActiveTab] = useState('id');
+  const [activeTab, setActiveTab] = useState(() => {
+    const storedTab = localStorage.getItem('activeTab');
+    return storedTab || 'id';
+  });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [hasUsherAssignment, setHasUsherAssignment] = useState(false);
   const [currentMemberId, setCurrentMemberId] = useState(null);
@@ -63,6 +68,11 @@ const TeenPortal = () => {
     };
     updateQR();
   }, [personalCode]);
+
+  // Clear stored activeTab after component mounts
+  useEffect(() => {
+    localStorage.removeItem('activeTab');
+  }, []);
 
   // Check for active usher assignments
   useEffect(() => {
@@ -108,10 +118,6 @@ const TeenPortal = () => {
       <div className="absolute top-20 left-10 w-40 h-40 rounded-full opacity-60 blur-xl" style={{ backgroundColor: 'hsl(140, 24, 85)' }}></div>
       <div className="absolute top-40 right-10 w-40 h-40 rounded-full opacity-60 blur-xl" style={{ backgroundColor: 'hsl(248, 22%, 50%)' }}></div>
       <div className="absolute bottom-20 left-20 w-40 h-40 rounded-full opacity-60 blur-xl" style={{ backgroundColor: 'hsl(186, 26%, 62%)' }}></div>
-      <button onClick={() => setDrawerOpen(true)} className="absolute top-4 left-4 z-10  text-white p-2 rounded-full shadow-lg bg-[hsl(186,70%,34%)]/80 backdrop-blur-lg hover:bg-[hsl(186,70%,34%)]">
-        <Menu size={20} />
-      </button>
-
       {/* Main Content */}
       <main className="flex-1 flex flex-col p-4 space-y-4">
         {activeTab === 'id' && (
@@ -133,11 +139,30 @@ const TeenPortal = () => {
         {activeTab === 'attendance' && (
           <AttendanceTab />
         )}
+
+        {activeTab === 'help' && (
+          <HelpTab />
+        )}
+
+        {activeTab === 'guidelines' && (
+          <ChurchGuidelinesTab />
+        )}
       </main>
+
+      {/* Menu Button - Outside drawer to avoid focus conflicts */}
+      <button
+        onClick={() => setDrawerOpen(true)}
+        className="absolute top-4 left-4 z-10 text-white p-2 rounded-full shadow-lg bg-[hsl(186,70%,34%)]/80 backdrop-blur-lg hover:bg-[hsl(186,70%,34%)]"
+        style={{ display: drawerOpen ? 'none' : 'block' }}
+      >
+        <Menu size={20} />
+      </button>
 
       {/* Side Drawer Navigation */}
       <SideDrawer open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SideDrawerContent className="bg-[hsl(186,70%,34%)]/80 backdrop-blur-lg">
+          <SideDrawerTitle className="sr-only">Navigation Menu</SideDrawerTitle>
+          <SideDrawerDescription className="sr-only">Access your profile, security settings, recovery options, attendance records, help documentation, and church guidelines</SideDrawerDescription>
           <div className="p-4 border-b border-white/20">
             <div className="flex items-center space-x-3">
               <Avatar className="h-12 w-12">
@@ -168,7 +193,7 @@ const TeenPortal = () => {
                 activeTab === 'id' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
               }`}
             >
-              <Home size={20} />
+              <QrCode size={20} />
               <span>ID Card</span>
             </button>
             <button
@@ -206,6 +231,30 @@ const TeenPortal = () => {
             >
               <Calendar size={20} />
               <span>Attendance</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('help');
+                setDrawerOpen(false);
+              }}
+              className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                activeTab === 'help' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
+              }`}
+            >
+              <HelpCircle size={20} />
+              <span>Help & FAQ</span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('guidelines');
+                setDrawerOpen(false);
+              }}
+              className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                activeTab === 'guidelines' ? 'bg-white text-black' : 'text-white hover:bg-white hover:text-black'
+              }`}
+            >
+              <BookOpen size={20} />
+              <span>Church Guidelines</span>
             </button>
             {hasUsherAssignment && (
               <button

@@ -15,7 +15,7 @@ This document provides comprehensive specifications for the BOL-TAS React fronte
 - **UI Framework**: Radix UI primitives with Tailwind CSS
 - **Icons**: Lucide React
 - **Charts**: Recharts for data visualization
-- **Forms**: React Hook Form for form management
+- **Forms**: Formik with Yup validation for secure form management
 - **QR Codes**: qrcode library for generation and html5-qrcode for scanning
 - **Real-time**: WebSocket support for live updates
 
@@ -55,55 +55,84 @@ src/
 
 #### Login Component (`src/components/auth/Login.jsx`)
 
-**Purpose**: User authentication with role-based redirection
+**Purpose**: Secure user authentication with role-based redirection
 **Features**:
-- Email/password login form
-- Form validation with error display
-- Loading states and error handling
+- Formik-powered email/password login form
+- Real-time validation with Yup schema
+- Loading states and comprehensive error handling
 - Backend-driven role verification
 - Automatic role-based redirect after successful login
-- Church-appropriate messaging
+- Church-appropriate messaging and security
 
-**State Management**:
+**Technology Stack**:
+- **Formik**: Form state management and submission
+- **Yup**: Schema-based validation
+- **Role-based routing**: Admin → Dashboard, Teens → Portal, Ushers → Terminal
+
+**Validation Schema**:
 ```javascript
-const [formData, setFormData] = useState({
-  email: '',
-  password: ''
+const validationSchema = Yup.object({
+  email: Yup.string()
+    .trim()
+    .required('Email is required')
+    .email('Email is invalid'),
+  password: Yup.string()
+    .required('Password is required')
 });
-const [errors, setErrors] = useState({});
-const [isSubmitting, setIsSubmitting] = useState(false);
 ```
 
-**API Integration**:
-- Uses `useLoginMutation` from RTK Query
-- Stores JWT tokens in localStorage
-- Dispatches `userLoggedIn` event for app-wide state updates
-- Role-based redirection:
-  - Admins → Admin dashboard (`/`)
-  - Temp ushers → Usher terminal (`/`)
-  - Teens/members → Teen portal (`/`)
+**Security Features**:
+- Input sanitization and validation
+- XSS prevention with React's built-in protection
+- Secure password handling
+- CSRF protection through proper form handling
 
 #### CreateAccount Component (`src/components/auth/CreateAccount.jsx`)
 
-**Purpose**: Streamlined member registration for church community
+**Purpose**: Secure member registration with enhanced validation
 **Features**:
-- Clean, member-focused registration form
+- Formik-powered registration form
+- Comprehensive password validation
+- Real-time form validation with Yup
 - Automatic role assignment (teen/member)
-- Form validation and error handling
-- Password confirmation
 - Success confirmation and auto-login
 - Church-appropriate messaging
 
 **Form Fields**:
-- Full name
-- Email address
-- Password (with strength indicator)
-- Confirm password
+- Full name (min 2 characters)
+- Email address (valid format required)
+- Password (strong validation: uppercase, lowercase, number, min 6 chars)
+- Confirm password (must match)
 
-**Key Changes**:
-- Removed role selection UI elements
-- Default role assignment to 'teen' for all new members
-- Streamlined interface focused on church membership
+**Validation Schema**:
+```javascript
+const validationSchema = Yup.object({
+  name: Yup.string()
+    .trim()
+    .required('Name is required')
+    .min(2, 'Name must be at least 2 characters'),
+  email: Yup.string()
+    .trim()
+    .required('Email is required')
+    .email('Email is invalid'),
+  password: Yup.string()
+    .required('Password is required')
+    .min(6, 'Password must be at least 6 characters')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    ),
+  confirmPassword: Yup.string()
+    .required('Please confirm your password')
+    .oneOf([Yup.ref('password')], 'Passwords do not match')
+});
+```
+
+**Security Enhancements**:
+- Strong password requirements
+- Input sanitization
+- XSS prevention
+- Secure form submission
 - Role management handled exclusively through admin backend
 
 ### Layout Components
@@ -957,6 +986,53 @@ export default defineConfig({
 });
 ```
 
+## Form Security & Validation
+
+### Formik Integration
+
+**Purpose**: Enhanced form security and state management
+**Benefits**:
+- Prevents data insecurity through controlled form state
+- Eliminates uncontrolled component state issues
+- Provides comprehensive validation before submission
+- Handles form submission errors gracefully
+- Prevents multiple simultaneous submissions
+
+**Implementation**:
+```javascript
+// Formik wrapper with validation
+<Formik
+  initialValues={initialValues}
+  validationSchema={validationSchema}
+  onSubmit={handleSubmit}
+>
+  {({ isSubmitting, errors }) => (
+    <Form>
+      {/* Form fields with automatic validation */}
+    </Form>
+  )}
+</Formik>
+```
+
+### Yup Validation Schema
+
+**Password Security Requirements**:
+- Minimum 6 characters
+- At least one uppercase letter
+- At least one lowercase letter
+- At least one number
+- Confirmation password matching
+
+**Email Validation**:
+- Proper email format validation
+- Trimmed input to prevent whitespace issues
+- Required field validation
+
+**Input Sanitization**:
+- Automatic trimming of string inputs
+- XSS prevention through controlled inputs
+- Type validation for all fields
+
 ## Security Considerations
 
 ### Authentication Security
@@ -965,13 +1041,15 @@ export default defineConfig({
 - Automatic token refresh
 - Secure logout with token blacklisting
 - CSRF protection for forms
+- Formik prevents injection attacks through controlled state
 
 ### Data Protection
 
-- Input sanitization and validation
+- Input sanitization and validation with Yup schemas
 - XSS prevention with React's built-in protection
 - Content Security Policy headers
 - Secure file upload handling
+- Formik prevents uncontrolled data manipulation
 
 ### API Security
 
@@ -979,6 +1057,7 @@ export default defineConfig({
 - Request/response encryption
 - Error message sanitization
 - CORS configuration
+- Form validation prevents malformed API requests
 
 This comprehensive React frontend specification provides the complete architecture, components, and implementation details for the BOL-TAS church management application.</content>
 </xai:function_call">The React frontend specifications have been created in `REACT_FRONTEND_SPECS.md`. This comprehensive document covers:

@@ -1,14 +1,47 @@
 import React from 'react';
+import { getUserAttendance } from '../../../utils/database';
 
 const AttendanceTab = () => {
-  // Mock attendance data - in real app, this would come from localStorage or API
-  const attendanceHistory = [
-    { date: '2024-12-25', service: 'Sunday Service', status: 'Present' },
-    { date: '2024-12-18', service: 'Sunday Service', status: 'Present' },
-    { date: '2024-12-11', service: 'Sunday Service', status: 'Absent' },
-    { date: '2024-12-04', service: 'Sunday Service', status: 'Present' },
-    { date: '2024-11-27', service: 'Sunday Service', status: 'Present' },
-  ];
+  // Get current user
+  const getCurrentUser = () => {
+    const userAccount = localStorage.getItem('userAccount');
+    return userAccount ? JSON.parse(userAccount) : null;
+  };
+
+  const currentUser = getCurrentUser();
+
+  // Calculate attendance data
+  const getAttendanceData = () => {
+    if (!currentUser?.id) {
+      return {
+        history: [],
+        summary: { present: 0, absent: 0, rate: 0 }
+      };
+    }
+
+    // Get real attendance data
+    const attendanceRecords = getUserAttendance(currentUser.id);
+
+    // Convert to display format
+    const history = attendanceRecords.map(record => ({
+      date: new Date(record.timestamp).toLocaleDateString(),
+      service: record.service,
+      status: 'Present' // All records in database are attendance records
+    }));
+
+    // Calculate summary
+    const present = history.length;
+    const totalWeeks = 52; // Assuming yearly calculation
+    const absent = Math.max(0, totalWeeks - present);
+    const rate = totalWeeks > 0 ? Math.round((present / totalWeeks) * 100) : 0;
+
+    return {
+      history,
+      summary: { present, absent, rate }
+    };
+  };
+
+  const { history: attendanceHistory, summary: attendanceSummary } = getAttendanceData();
 
   return (
     <div className="flex-1 flex flex-col space-y-4">
@@ -39,15 +72,15 @@ const AttendanceTab = () => {
         <h3 className="text-lg font-bold text-black mb-4">Attendance Summary</h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">4</p>
+            <p className="text-2xl font-bold text-green-600">{attendanceSummary.present}</p>
             <p className="text-sm text-gray-600">Present</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">1</p>
+            <p className="text-2xl font-bold text-red-600">{attendanceSummary.absent}</p>
             <p className="text-sm text-gray-600">Absent</p>
           </div>
         </div>
-        <p className="text-center mt-4 text-sm text-gray-600">80% Attendance Rate</p>
+        <p className="text-center mt-4 text-sm text-gray-600">{attendanceSummary.rate}% Attendance Rate</p>
       </div>
     </div>
   );
