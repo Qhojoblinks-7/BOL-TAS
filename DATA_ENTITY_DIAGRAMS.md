@@ -375,6 +375,8 @@ graph TD
 ### Entity #7 - Registration Form State
 - **Removed**: `role` field
 - **Reason**: Roles are now assigned by admin, not selected during registration
+- **Updated**: Streamlined to member-focused registration
+- **Default**: All new users automatically assigned 'teen' role
 
 ### Normalization Applied
 - **Consistent field naming** across all entities
@@ -387,6 +389,10 @@ graph TD
 The corrected data model now properly supports:
 - **Admin-controlled role assignment** (no self-selection of roles)
 - **Streamlined member profiles** (removed non-essential fields)
+- **Backend-driven authentication** with role validation
+- **Role-based redirection** after successful login
+- **Exclusive usher access** through admin assignment only
+- **Church-appropriate user onboarding** focused on membership
 - **Temporary usher assignments** with proper expiration
 - **Clean separation** between permanent and temporary roles
 

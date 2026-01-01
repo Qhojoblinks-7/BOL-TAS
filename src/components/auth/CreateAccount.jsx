@@ -9,8 +9,7 @@ const CreateAccount = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    role: 'teen'
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,12 +23,6 @@ const CreateAccount = () => {
     } while (existingCodes.includes(code));
     return code;
   };
-
-  const roles = [
-    { value: 'teen', label: 'Teen Member', icon: User, description: 'Access to Teen Portal and BOL-Key' },
-    { value: 'usher', label: 'Usher', icon: UserCheck, description: 'Access to Usher Terminal for check-ins' },
-    { value: 'admin', label: 'Administrator', icon: Shield, description: 'Full system administration access' }
-  ];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -69,10 +62,6 @@ const CreateAccount = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (!formData.role) {
-      newErrors.role = 'Please select a role';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -96,10 +85,11 @@ const CreateAccount = () => {
       // Store user data (in a real app, this would be sent to backend)
       const userData = {
         ...formData,
+        role: 'teen', // Default role for new members
         id: `user_${Date.now()}`,
         personalCode,
         createdAt: new Date().toISOString(),
-        bolKey: formData.role === 'teen' ? `${new Date().getFullYear() % 100}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}` : null
+        bolKey: `${new Date().getFullYear() % 100}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
       };
 
       // Add user to database
@@ -111,20 +101,8 @@ const CreateAccount = () => {
       // Dispatch custom event to notify App component of account creation
       window.dispatchEvent(new CustomEvent('userAccountCreated', { detail: userData }));
 
-      // Redirect based on role
-      switch (formData.role) {
-        case 'teen':
-          navigate('/');
-          break;
-        case 'usher':
-          navigate('/');
-          break;
-        case 'admin':
-          navigate('/');
-          break;
-        default:
-          navigate('/');
-      }
+      // Redirect to teen portal for new members
+      navigate('/');
 
     } catch {
       setErrors({ submit: 'Account creation failed. Please try again.' });
@@ -142,8 +120,8 @@ const CreateAccount = () => {
 
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white border-b border-gray-300 p-4">
-        <h1 className="text-2xl font-bold text-black">Create Account</h1>
-        <p className="text-gray-600">Join the BOL-TAS System</p>
+        <h1 className="text-2xl font-bold text-black">Join BOL-TAS</h1>
+        <p className="text-gray-600">Create your member account</p>
       </header>
 
       {/* Main Content */}
@@ -235,42 +213,6 @@ const CreateAccount = () => {
                 {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
               </div>
 
-              {/* Role Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Select Your Role
-                </label>
-                <div className="space-y-2">
-                  {roles.map((role) => {
-                    const IconComponent = role.icon;
-                    return (
-                      <label
-                        key={role.value}
-                        className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                          formData.role === role.value
-                            ? 'border-[#d1e5e6] bg-[#d1e5e6]/10'
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="role"
-                          value={role.value}
-                          checked={formData.role === role.value}
-                          onChange={handleInputChange}
-                          className="mr-3"
-                        />
-                        <IconComponent className="h-5 w-5 text-gray-600 mr-3" />
-                        <div>
-                          <div className="font-medium text-gray-900">{role.label}</div>
-                          <div className="text-sm text-gray-600">{role.description}</div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-                {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
-              </div>
 
               {errors.submit && <p className="text-red-500 text-sm">{errors.submit}</p>}
 

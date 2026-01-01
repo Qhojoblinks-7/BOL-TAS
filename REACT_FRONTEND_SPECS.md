@@ -55,13 +55,14 @@ src/
 
 #### Login Component (`src/components/auth/Login.jsx`)
 
-**Purpose**: User authentication with JWT tokens
+**Purpose**: User authentication with role-based redirection
 **Features**:
 - Email/password login form
 - Form validation with error display
 - Loading states and error handling
-- Automatic redirect after successful login
-- "Remember me" functionality (optional)
+- Backend-driven role verification
+- Automatic role-based redirect after successful login
+- Church-appropriate messaging
 
 **State Management**:
 ```javascript
@@ -77,25 +78,33 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 - Uses `useLoginMutation` from RTK Query
 - Stores JWT tokens in localStorage
 - Dispatches `userLoggedIn` event for app-wide state updates
+- Role-based redirection:
+  - Admins → Admin dashboard (`/`)
+  - Temp ushers → Usher terminal (`/`)
+  - Teens/members → Teen portal (`/`)
 
 #### CreateAccount Component (`src/components/auth/CreateAccount.jsx`)
 
-**Purpose**: New user registration
+**Purpose**: Streamlined member registration for church community
 **Features**:
-- Multi-step registration form
-- Role selection (teen, admin, usher)
+- Clean, member-focused registration form
+- Automatic role assignment (teen/member)
 - Form validation and error handling
 - Password confirmation
-- Terms acceptance (optional)
 - Success confirmation and auto-login
+- Church-appropriate messaging
 
 **Form Fields**:
 - Full name
 - Email address
 - Password (with strength indicator)
 - Confirm password
-- Role selection
-- Parental consent (for teens)
+
+**Key Changes**:
+- Removed role selection UI elements
+- Default role assignment to 'teen' for all new members
+- Streamlined interface focused on church membership
+- Role management handled exclusively through admin backend
 
 ### Layout Components
 

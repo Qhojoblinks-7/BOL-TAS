@@ -69,8 +69,19 @@ const Login = () => {
       // Successful login - dispatch event to update app state
       window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: user }));
 
-      // Navigate to dashboard
-      navigate('/');
+      // Role-based redirection
+      switch (user.role) {
+        case 'admin':
+          navigate('/');
+          break;
+        case 'temp_usher':
+          navigate('/');
+          break;
+        case 'teen':
+        default:
+          navigate('/');
+          break;
+      }
 
     } catch {
       setErrors({ submit: 'Login failed. Please try again.' });

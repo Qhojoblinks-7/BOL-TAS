@@ -65,15 +65,18 @@ sequenceDiagram
     participant LS as localStorage
     participant A as App.jsx
     participant R as Router
+    participant DB as Database
 
     U->>B: Access application
     B->>LS: Check for userAccount
-    LS-->>B: Return session data
+    LS-->>B: Return session data or null
     B->>A: Initialize with session
-    A->>R: Route based on role
+    A->>DB: Validate user role (if session exists)
+    DB-->>A: Return user data with role
+    A->>R: Route based on validated role
     R->>U: Render appropriate module
 
-    Note over U,R: Role-based access control enforced
+    Note over U,R: Backend-driven role validation enforced
 ```
 
 ### Attendance Processing Flow
