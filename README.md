@@ -30,6 +30,7 @@ graph TB
     G --> G4[Attendance]
     G --> G5[Ushers Mgmt]
     G --> G6[Shepherding]
+    G --> G7[Usher Terminal]
 
     H --> H1[Teen Portal]
     H --> H2[Profile Edit]
@@ -264,6 +265,16 @@ graph TD
 - Church guidelines and code of conduct
 - Database integration for attendance tracking
 - Accessibility compliance (WCAG standards)
+- Admin Usher Terminal with global search functionality
+- Modal-based error handling for QR scanning
+- Dedicated search results page with table format
+- Direct check-in from search results
+- Check-in status indicators in search results
+- Mock database integration for testing
+- Usher Terminal with member-specific features
+- Mobile-responsive search results in card format
+- QR code detected info in confirmation popups
+- Scan error modals with scanned code display
 
 #### ⚠️ Partially Implemented
 - Redux store (configured but unused)

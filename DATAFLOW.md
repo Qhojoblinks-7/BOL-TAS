@@ -16,11 +16,20 @@ graph TD
      G -->|Admin| H[AdminLayout + AdminMain]
      G -->|Teen| I[TeenPortal]
      G -->|Usher| J[UsherTerminal]
+     G -->|Admin| K[AdminUsherTerminal]
 
      H --> K[Admin Components]
      K --> L[Local State Management]
      L --> M[Mock Data Arrays]
      M --> N[UI Rendering]
+
+     K --> O[Global Search Integration]
+     O --> P[TopNav Search Events]
+     P --> Q[Member Filtering]
+     Q --> R[Search Results Table]
+     R --> S[Member Details Modal]
+     S --> T[Confirm Presence]
+     T --> U[localStorage: adminAttendanceLog]
 
      I --> O[Teen Components]
      O --> P[localStorage: Profile Data]
@@ -152,6 +161,13 @@ graph TD
 4. **Attendance Logging** → All check-in methods → localStorage persistence
 5. **Undo Functionality** → Timestamp-based reversal → State cleanup
 
+### **Admin Usher Terminal Data Flow**
+1. **Global Search** → TopNav input → Custom events → Member filtering → Results table
+2. **QR Scanning** → Camera access → Modal error handling → Check-in processing
+3. **BOL-Key Entry** → Text input → Format validation → Check-in processing
+4. **Member Details** → Table click → Modal display → Confirm presence → Attendance logging
+5. **Attendance Logging** → Separate localStorage key (`adminAttendanceLog`) → No expiration
+
 ### **Teen Portal Data Flow**
 1. **Profile Management** → Form inputs → localStorage updates
 2. **Security Settings** → Recovery method configuration → localStorage
@@ -184,6 +200,10 @@ graph TD
 - BOL-key entry system
 - Smart search functionality
 - Local storage persistence for sessions and logs
+- Admin Usher Terminal with global search integration
+- Modal-based error handling for QR scanning
+- Temporary usher assignment system
+- Cross-page navigation and state management
 
 ### **Partially Implemented**
 - Redux store (configured but not used)

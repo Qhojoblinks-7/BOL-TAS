@@ -4,9 +4,45 @@
 
 This document details the internal data flow and architecture of the Usher Terminal module in the BOL-TAS church management system. The Usher module handles attendance tracking through multiple input methods: QR code scanning, 5-digit code entry, and smart search. The system integrates with a Django backend for data persistence and member management.
 
+There are two versions of the Usher Terminal:
+1. **Regular Usher Terminal** (`UsherTerminal.jsx`) - For temporary and permanent ushers
+2. **Admin Usher Terminal** (`AdminUsherTerminal.jsx`) - For administrators with enhanced features
+
 ## Core Architecture
 
+### Regular Usher Terminal
 The Usher Terminal is a single-page application component (`UsherTerminal.jsx`) that manages all attendance operations with local state and localStorage persistence.
+
+### Admin Usher Terminal
+The Admin Usher Terminal (`AdminUsherTerminal.jsx`) provides administrators with access to the usher functionality while maintaining the admin interface design. Key differences:
+
+**Architecture Features:**
+- Integrated with AdminLayout (sidebar + topnav)
+- Uses global search from TopNav component for member lookup
+- Modal-based error handling for QR scanning failures
+- Simplified BOL-key input (regular text input instead of virtual keypad)
+- Separate localStorage key (`adminAttendanceLog`) to avoid conflicts with regular usher logs
+- No expiration handling (admins don't have session limits)
+
+**Data Flow:**
+```mermaid
+graph TD
+    A[Admin User] --> B[AdminUsherTerminal.jsx]
+    B --> C[Global Search Integration]
+    C --> D[TopNav Search Events]
+    D --> E[Member Filtering]
+    E --> F[Search Results Table]
+    F --> G[Member Details Modal]
+    G --> H[Confirm Presence Button]
+    H --> I[Attendance Record Creation]
+    I --> J[localStorage: adminAttendanceLog]
+```
+
+**Search Integration:**
+- Listens for `globalSearch` events from TopNav
+- Filters church members by name, personal code, area, and parent
+- Displays results in a sortable table format
+- Click member → Details modal → Confirm attendance
 
 ## Data Flow Architecture
 

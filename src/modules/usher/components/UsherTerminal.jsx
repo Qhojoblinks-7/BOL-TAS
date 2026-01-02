@@ -8,14 +8,13 @@ import BOLKeyTab from './BOLKeyTab';
 import SearchTab from './SearchTab';
 import SuccessOverlay from './SuccessOverlay';
 import UndoButton from './UndoButton';
-import { useGetChurchMembersQuery } from '../../../services/membersApi';
-import { useGetUsersQuery } from '../../../services/usersApi';
+import mockDatabase from '../../../data/mockDatabase.json';
 import { useAddAttendanceRecordMutation } from '../../../services/attendanceApi';
 
 const UsherTerminal = () => {
-  // RTK Query hooks
-  const { data: churchMembers = [] } = useGetChurchMembersQuery();
-  const { data: users = [] } = useGetUsersQuery();
+  // Use mock data for demonstration
+  const churchMembers = mockDatabase.churchMembers;
+  const users = mockDatabase.users;
   const [addAttendanceRecord] = useAddAttendanceRecordMutation();
 
   const [activeTab, setActiveTab] = useState('qr');
@@ -36,6 +35,7 @@ const UsherTerminal = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [scannedMember, setScannedMember] = useState(null);
   const [scanError, setScanError] = useState(null);
+  const [showScanErrorModal, setShowScanErrorModal] = useState(false);
   const scannerInstance = useRef(null);
 
 
@@ -119,7 +119,8 @@ const UsherTerminal = () => {
 
     // Step 1: Format Validation
     if (!validateQRFormat(decodedText)) {
-      setScanError('Invalid QR code format. Expected YY-NNN format.');
+      setScanError('Invalid QR code format. Expected NNNNN format.');
+      setShowScanErrorModal(true);
       return;
     }
 
@@ -127,6 +128,7 @@ const UsherTerminal = () => {
     const member = lookupMember(decodedText);
     if (!member) {
       setScanError('Member not found. Please check the QR code or try manual entry.');
+      setShowScanErrorModal(true);
       return;
     }
 
@@ -294,6 +296,7 @@ const UsherTerminal = () => {
             onRetry={() => {
               setScanError(null);
               setScanResult('');
+              setShowScanErrorModal(false);
             }}
           />
         )}
@@ -329,25 +332,31 @@ const UsherTerminal = () => {
       {showConfirmation && scannedMember && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-            <h2 className="text-xl font-bold text-black mb-4">Confirm Check-in</h2>
-            <div className="space-y-3 mb-6">
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Name</p>
-                <p className="font-medium text-black">{scannedMember.name}</p>
+              <h2 className="text-xl font-bold text-black mb-2">QR Code Detected</h2>
+              <p className="text-lg font-mono text-[hsl(186,70%,34%)] mb-4">{scanResult}</p>
+              <p className="text-gray-600 mb-4">Please confirm member details to complete check-in.</p>
+              <div className="space-y-3 mb-6">
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Scanned Code</p>
+                  <p className="font-medium text-black font-mono">{scanResult}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Name</p>
+                  <p className="font-medium text-black">{scannedMember.name}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Area</p>
+                  <p className="font-medium text-black">{scannedMember.area}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Parent/Guardian</p>
+                  <p className="font-medium text-black">{scannedMember.parent}</p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Birth Year</p>
+                  <p className="font-medium text-black">{scannedMember.birthYear}</p>
+                </div>
               </div>
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Area</p>
-                <p className="font-medium text-black">{scannedMember.area}</p>
-              </div>
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Parent/Guardian</p>
-                <p className="font-medium text-black">{scannedMember.parent}</p>
-              </div>
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">Birth Year</p>
-                <p className="font-medium text-black">{scannedMember.birthYear}</p>
-              </div>
-            </div>
             <div className="flex gap-3">
               <button
                 onClick={handleCancelCheckIn}
@@ -379,6 +388,43 @@ const UsherTerminal = () => {
             </p>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div className="bg-red-600 h-2 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scan Error Modal */}
+      {showScanErrorModal && scanError && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle size={32} className="text-red-600" />
+              </div>
+              <h2 className="text-xl font-bold text-black mb-4">Scan Error</h2>
+              <div className="p-3 bg-gray-50 rounded-lg mb-4">
+                <p className="text-sm text-gray-600">Scanned Code</p>
+                <p className="font-medium text-black font-mono">{scanResult}</p>
+              </div>
+              <p className="text-gray-600 mb-6">{scanError}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowScanErrorModal(false);
+                    setScanError(null);
+                    setScanResult('');
+                  }}
+                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
+                >
+                  Try Again
+                </button>
+                <button
+                  onClick={() => setShowScanErrorModal(false)}
+                  className="flex-1 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

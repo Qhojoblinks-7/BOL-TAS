@@ -11,15 +11,17 @@ const TopNav = ({ isSidebarCollapsed }) => {
 
   // Get current page for context-specific search
   const getCurrentPage = () => {
-    const path = location.pathname.replace('/', '');
+    const path = location.pathname;
     switch (path) {
-      case 'members': return 'members';
-      case 'attendance': return 'attendance';
-      case 'ushers': return 'ushers';
-      case 'shepherding': return 'shepherding';
-      case 'statistics': return 'statistics';
-      case 'overview':
-      case '': return 'overview';
+      case '/members': return 'members';
+      case '/attendance': return 'attendance';
+      case '/ushers': return 'ushers';
+      case '/check-in-terminal': return 'check-in-terminal';
+      case '/search-results': return 'check-in-terminal';
+      case '/shepherding': return 'shepherding';
+      case '/statistics': return 'statistics';
+      case '/overview':
+      case '/': return 'overview';
       default: return 'overview';
     }
   };
@@ -32,6 +34,7 @@ const TopNav = ({ isSidebarCollapsed }) => {
       case 'members': return 'Search members by name, email, or ID...';
       case 'attendance': return 'Search attendance by name or ID...';
       case 'ushers': return 'Search ushers...';
+      case 'check-in-terminal': return 'Search members by name, code, area, or parent...';
       case 'shepherding': return 'Search shepherding records...';
       case 'statistics': return 'Search statistics...';
       default: return 'Search...';

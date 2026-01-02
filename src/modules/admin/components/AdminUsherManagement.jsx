@@ -227,7 +227,7 @@ const AdminUsherManagement = () => {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => navigate('/usher')}
+            onClick={() => navigate('/check-in-terminal')}
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
           >
             <QrCode size={20} />

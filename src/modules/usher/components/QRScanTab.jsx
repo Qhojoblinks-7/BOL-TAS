@@ -70,19 +70,7 @@ const QRScanTab = ({ isScanning, scanResult, scanError, startScanning, stopScann
         </div>
       )}
 
-      {/* Result Box */}
-      {scanResult && !scanError && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 md:p-6 shadow-lg border-2 border-blue-300">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="text-blue-600 flex-shrink-0" size={28} />
-            <div>
-              <p className="text-xs md:text-sm text-blue-700 font-semibold">QR Code Detected</p>
-              <p className="text-base md:text-lg font-bold text-blue-900">{scanResult}</p>
-              <p className="text-sm text-blue-600 mt-1">Please confirm member details to complete check-in.</p>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </>
   );
 };

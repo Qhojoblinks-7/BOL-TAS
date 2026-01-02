@@ -1,16 +1,17 @@
-# Temporary Usher Assignment Workflow
+# Admin Usher Terminal Workflow
 
 ## Overview
 
-This document describes the corrected workflow for temporary usher assignment in the BOL-TAS church management system. Unlike permanent role assignments, this system treats usher duties as temporary responsibilities assigned to existing members for specific church services.
+This document describes the Admin Usher Terminal functionality in the BOL-TAS church management system. The Admin Usher Terminal provides administrators with direct access to attendance check-in operations, including QR code scanning, manual entry, and member search capabilities.
 
 ## Core Concept
 
-- **All users are members first** - No separate "usher" accounts are created
-- **Temporary role activation** - Members are assigned usher duties for specific time periods
-- **Admin-controlled assignment** - Only administrators can grant usher privileges
-- **Time-bound access** - Usher credentials automatically expire at 12:00 PM
-- **Portal integration** - Usher features activate within the member's existing portal
+- **Admin Direct Access** - Administrators can access the usher terminal anytime without restrictions
+- **Multiple Check-in Methods** - QR scanning, BOL-key entry, and smart search
+- **Global Search Integration** - Uses the TopNav search engine for member lookup
+- **Dedicated Results Page** - Search results displayed in a separate table view
+- **Real-time Status** - Check-in status indicators for each member
+- **Mock Data Integration** - Connected to mock database for testing
 
 ## Complete Workflow Architecture
 

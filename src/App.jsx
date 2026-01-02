@@ -12,6 +12,7 @@ import TeenPortal from './modules/teen/components/TeenPortal';
 import EditProfile from './modules/teen/components/EditProfile';
 import UsherTerminal from './modules/usher/components/UsherTerminal';
 import AdminUsherTerminal from './modules/admin/components/AdminUsherTerminal';
+import SearchResultsPage from './modules/admin/components/SearchResultsPage';
 import CreateAccount from './components/auth/CreateAccount';
 import Login from './components/auth/Login';
 import { cleanupExpiredAssignments } from './utils/helpers';
@@ -99,6 +100,8 @@ function App() {
             <Route path="/shepherding" element={<AdminLayout><ShepherdingPage /></AdminLayout>} />
             <Route path="/help" element={<AdminLayout><AdminHelpTab /></AdminLayout>} />
             <Route path="/usher" element={<AdminLayout><AdminUsherTerminal /></AdminLayout>} />
+            <Route path="/check-in-terminal" element={<AdminLayout><AdminUsherTerminal /></AdminLayout>} />
+            <Route path="/search-results" element={<AdminLayout><SearchResultsPage /></AdminLayout>} />
           </>
         )}
 

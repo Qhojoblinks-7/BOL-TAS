@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Mail, Lock, LogIn } from 'lucide-react';
-import { getAll } from '../../utils/database';
+import mockDatabase from '../../data/mockDatabase.json';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -23,8 +23,8 @@ const Login = () => {
     setIsSubmitting(true);
 
     try {
-      // Check against users in database
-      const users = getAll('users');
+      // Check against users in mock database
+      const users = mockDatabase.users;
       const user = users.find(u => u.email === values.email && u.password === values.password);
 
       if (!user) {

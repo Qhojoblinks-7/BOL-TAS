@@ -26,6 +26,7 @@ graph TB
      G --> G4[Attendance]
      G --> G5[Ushers Mgmt]
      G --> G6[Shepherding]
+     G --> G7[Usher Terminal]
 
      H --> H1[Teen Portal]
      H --> H2[Profile Edit]

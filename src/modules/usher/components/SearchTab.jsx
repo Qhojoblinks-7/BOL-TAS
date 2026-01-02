@@ -37,6 +37,7 @@ const SearchTab = ({ searchQuery, setSearchQuery, searchResults, handleSearch, h
                 <h4 className="font-bold text-lg text-black">{member.name}</h4>
                 <p className="text-sm text-gray-600">Area: <span className="font-medium text-gray-800">{member.area}</span></p>
                 <p className="text-sm text-gray-600">Parent: <span className="font-medium text-gray-800">{member.parent}</span></p>
+                <p className="text-sm text-gray-600">Birth Year: <span className="font-medium text-gray-800">{member.birthYear}</span></p>
               </div>
               <button
                 onClick={() => handleCheckIn(member)}
