@@ -1,5 +1,5 @@
 import React from 'react';
-import { getUserAttendance } from '../../../utils/database';
+import mockDatabase from '../../../data/mockDatabase.json';
 
 const AttendanceTab = () => {
   // Get current user
@@ -19,8 +19,8 @@ const AttendanceTab = () => {
       };
     }
 
-    // Get real attendance data
-    const attendanceRecords = getUserAttendance(currentUser.id);
+    // Get attendance data from mock database
+    const attendanceRecords = mockDatabase.attendanceRecords.filter(record => record.userId === currentUser.id);
 
     // Convert to display format
     const history = attendanceRecords.map(record => ({

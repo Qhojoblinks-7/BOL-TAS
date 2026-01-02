@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Download, User, Mail, Phone, MapPin, Calendar, Filter, CheckCircle, AlertCircle, UserCheck } from 'lucide-react';
 import UsherAssignmentModal from './UsherAssignmentModal';
 import { saveTemporaryAssignment, getActiveAssignmentForMember, revokeAssignment } from '@/utils/helpers.js';
-import { getAll, add, remove } from '../../../utils/database';
+import mockDatabase from '../../../data/mockDatabase.json';
 
 const MembersPage = () => {
   const [members, setMembers] = useState([]);

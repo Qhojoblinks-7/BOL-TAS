@@ -36,6 +36,12 @@ const TeenPortal = () => {
     };
   });
   const [personalCode, setPersonalCode] = useState(() => {
+    const userAccount = localStorage.getItem('userAccount');
+    if (userAccount) {
+      const user = JSON.parse(userAccount);
+      return user.personalCode;
+    }
+    // Fallback for demo
     const stored = localStorage.getItem('personalCode');
     if (stored) return stored;
     const newCode = generatePersonalCode();

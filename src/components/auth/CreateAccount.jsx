@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { User, Mail, Lock } from 'lucide-react';
-import { add, getAll } from '../../utils/database';
+import mockDatabase from '../../data/mockDatabase.json';
 
 const CreateAccount = () => {
   const navigate = useNavigate();
@@ -32,8 +32,7 @@ const CreateAccount = () => {
   });
 
   const generateUniquePersonalCode = () => {
-    const users = getAll('users');
-    const existingCodes = users.map(user => user.personalCode);
+    const existingCodes = mockDatabase.users.map(user => user.personalCode);
     let code;
     do {
       code = Math.floor(10000 + Math.random() * 90000).toString();
@@ -61,8 +60,6 @@ const CreateAccount = () => {
         bolKey: `${new Date().getFullYear() % 100}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
       };
 
-      // Add user to database
-      add('users', userData);
 
       // Store current user session in localStorage
       localStorage.setItem('userAccount', JSON.stringify(userData));
