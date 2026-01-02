@@ -1,5 +1,5 @@
 // Helper functions
-import mockDatabase from '../data/mockDatabase.json'; // eslint-disable-line no-unused-vars
+import { getAll, add, update, remove } from './database';
 
 export const generateId = () => {
   return Math.random().toString(36).substr(2, 9);
@@ -13,70 +13,116 @@ export const capitalize = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-// Temporary Usher Assignment Storage Functions
+// Usher Assignment Functions - Connected to Database
 
 export const getTemporaryAssignments = () => {
-  const assignments = localStorage.getItem('temporaryAssignments');
-  return assignments ? JSON.parse(assignments) : [];
+  return getAll('usherAssignments');
 };
 
 export const saveTemporaryAssignment = (assignment) => {
-  const assignments = getTemporaryAssignments();
-  assignments.push(assignment);
-  localStorage.setItem('temporaryAssignments', JSON.stringify(assignments));
+  // Transform assignment to database format
+  const dbAssignment = {
+    id: assignment.id,
+    userId: assignment.memberId,
+    assignedBy: assignment.assignedBy,
+    assignedAt: assignment.assignedAt,
+    expiresAt: assignment.expiration,
+    status: assignment.status,
+    memberEmail: assignment.memberEmail,
+    credentials: assignment.credentials
+  };
+  add('usherAssignments', dbAssignment);
   return assignment;
 };
 
 export const getActiveAssignmentForMember = (memberId) => {
-  const assignments = getTemporaryAssignments();
+  const assignments = getAll('usherAssignments');
   const now = Date.now();
 
-  return assignments.find(assignment =>
-    assignment.memberId === memberId &&
+  const assignment = assignments.find(assignment =>
+    assignment.userId === memberId &&
     assignment.status === 'active' &&
-    assignment.expiration > now
+    new Date(assignment.expiresAt) > now
   );
+
+  if (assignment) {
+    // Transform back to expected format
+    return {
+      id: assignment.id,
+      memberId: assignment.userId,
+      memberEmail: assignment.memberEmail,
+      credentials: assignment.credentials,
+      expiration: assignment.expiresAt,
+      assignedBy: assignment.assignedBy,
+      assignedAt: assignment.assignedAt,
+      status: assignment.status
+    };
+  }
+  return null;
 };
 
 export const getActiveAssignmentForEmail = (email) => {
-  const assignments = getTemporaryAssignments();
+  const assignments = getAll('usherAssignments');
   const now = Date.now();
 
-  return assignments.find(assignment =>
+  const assignment = assignments.find(assignment =>
     assignment.memberEmail === email &&
     assignment.status === 'active' &&
-    assignment.expiration > now
+    new Date(assignment.expiresAt) > now
   );
+
+  if (assignment) {
+    return {
+      id: assignment.id,
+      memberId: assignment.userId,
+      memberEmail: assignment.memberEmail,
+      credentials: assignment.credentials,
+      expiration: assignment.expiresAt,
+      assignedBy: assignment.assignedBy,
+      assignedAt: assignment.assignedAt,
+      status: assignment.status
+    };
+  }
+  return null;
 };
 
 export const getAllActiveAssignments = () => {
-  const assignments = getTemporaryAssignments();
+  const assignments = getAll('usherAssignments');
   const now = Date.now();
 
-  return assignments.filter(assignment =>
-    assignment.status === 'active' &&
-    assignment.expiration > now
-  );
+  return assignments
+    .filter(assignment =>
+      assignment.status === 'active' &&
+      new Date(assignment.expiresAt) > now
+    )
+    .map(assignment => ({
+      id: assignment.id,
+      memberId: assignment.userId,
+      memberEmail: assignment.memberEmail,
+      memberName: assignment.memberName || 'Unknown',
+      credentials: assignment.credentials,
+      expiration: assignment.expiresAt,
+      assignedBy: assignment.assignedBy,
+      assignedAt: assignment.assignedAt,
+      status: assignment.status
+    }));
 };
 
 export const revokeAssignment = (assignmentId) => {
-  const assignments = getTemporaryAssignments();
-  const assignmentIndex = assignments.findIndex(a => a.id === assignmentId);
-
-  if (assignmentIndex !== -1) {
-    assignments[assignmentIndex].status = 'revoked';
-    localStorage.setItem('temporaryAssignments', JSON.stringify(assignments));
+  const assignment = getAll('usherAssignments').find(a => a.id === assignmentId);
+  if (assignment) {
+    update('usherAssignments', assignmentId, { status: 'revoked' });
     return true;
   }
   return false;
 };
 
 export const cleanupExpiredAssignments = () => {
-  const assignments = getTemporaryAssignments();
+  const assignments = getAll('usherAssignments');
   const now = Date.now();
 
   const activeAssignments = assignments.filter(assignment =>
-    assignment.status === 'active' && assignment.expiration > now
+    assignment.status === 'active' && new Date(assignment.expiresAt) > now
   );
 
   // Keep only active assignments and those that were revoked (for audit trail)
@@ -84,7 +130,7 @@ export const cleanupExpiredAssignments = () => {
     assignment.status === 'revoked' || activeAssignments.some(active => active.id === assignment.id)
   );
 
-  localStorage.setItem('temporaryAssignments', JSON.stringify(keptAssignments));
+  // Note: In a real implementation, we might remove expired assignments, but for now we keep them
   return keptAssignments.length;
 };
 
