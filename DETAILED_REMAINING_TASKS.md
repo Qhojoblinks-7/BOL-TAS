@@ -6,36 +6,35 @@ This document provides a detailed, actionable task list for completing the BOL-T
 ## 🚨 High Priority Tasks
 
 ### 1. Django Backend Implementation
-- [ ] **Project Setup**
-  - [ ] Create Django project with proper directory structure
-  - [ ] Configure PostgreSQL database settings
-  - [ ] Set up virtual environment and requirements.txt
-  - [ ] Configure Django settings for production (DEBUG=False, SECRET_KEY, etc.)
+- [ ] **Project Setup** - Create Django project with proper directory structure
+- [ ] **PostgreSQL Database** - Configure database settings and connections
+- [ ] **Virtual Environment** - Set up requirements.txt and dependencies
+- [ ] **Production Settings** - Configure Django for production (DEBUG=False, SECRET_KEY, etc.)
 
-- [ ] **Database Models** (Following DJANGO_BACKEND_SPECS.md)
-  - [ ] Create User model with role-based fields (admin, teen, usher, tempUsher)
-  - [ ] Implement ChurchMember model with personal codes and relationships
-  - [ ] Build AttendanceRecord model with QR/BOL key tracking
-  - [ ] Create UsherAssignment model for temporary assignments
-  - [ ] Implement ShepherdingContact model for pastoral care
-  - [ ] Add Usher model for permanent usher accounts
-  - [ ] Set up proper foreign key relationships and constraints
+- [ ] **Database Models** - Following DJANGO_BACKEND_SPECS.md specifications
+- [ ] **User Model** - Create with role-based fields (admin, teen, usher, tempUsher)
+- [ ] **ChurchMember Model** - Implement with personal codes and relationships
+- [ ] **AttendanceRecord Model** - Build with QR/BOL key tracking
+- [ ] **UsherAssignment Model** - Create for temporary assignments
+- [ ] **ShepherdingContact Model** - Implement for pastoral care
+- [ ] **Usher Model** - Add for permanent usher accounts
+- [ ] **Foreign Key Relationships** - Set up proper constraints and relationships
 
-- [ ] **API Endpoints** (REST Framework)
-  - [ ] User authentication endpoints (register, login, logout, token refresh)
-  - [ ] Church member CRUD endpoints with search/filtering
-  - [ ] Attendance recording endpoints (QR scan, BOL key, manual)
-  - [ ] Usher assignment management endpoints
-  - [ ] Shepherding contact tracking endpoints
-  - [ ] Statistics and reporting endpoints
-  - [ ] File upload endpoints for profile photos
+- [ ] **API Endpoints** - REST Framework implementation
+- [ ] **Authentication Endpoints** - Register, login, logout, token refresh
+- [ ] **Member CRUD Endpoints** - With search/filtering capabilities
+- [ ] **Attendance Endpoints** - QR scan, BOL key, manual recording
+- [ ] **Usher Assignment Endpoints** - Management and tracking
+- [ ] **Shepherding Endpoints** - Contact tracking and management
+- [ ] **Statistics Endpoints** - Reporting and analytics
+- [ ] **File Upload Endpoints** - Profile photo handling
 
-- [ ] **Authentication & Authorization**
-  - [ ] Implement JWT token authentication
-  - [ ] Create custom permission classes for role-based access
-  - [ ] Add password hashing and validation
-  - [ ] Implement token refresh mechanism
-  - [ ] Set up CORS configuration for frontend
+- [ ] **Authentication & Authorization** - Security implementation
+- [ ] **JWT Token Authentication** - Implement token-based auth
+- [ ] **Permission Classes** - Create custom role-based access control
+- [ ] **Password Security** - Add hashing and validation
+- [ ] **Token Refresh** - Implement refresh mechanism
+- [ ] **CORS Configuration** - Set up for frontend integration
 
 ### 2. API Integration (Frontend)
 - [ ] **RTK Query Setup**
