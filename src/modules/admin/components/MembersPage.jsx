@@ -57,7 +57,8 @@ const MembersPage = () => {
               new Date(memberAttendance[0].timestamp).toISOString().split('T')[0] : null,
             attendanceStreak: streak,
             personalCode: member.personalCode,
-            parent: member.parent
+            parent: member.parent,
+            userId: user?.id
           };
         });
 
@@ -362,7 +363,9 @@ const MembersPage = () => {
   };
 
   const handleRevokeUsher = (memberId) => {
-    const assignment = getActiveAssignmentForMember(memberId);
+    const member = members.find(m => m.id === memberId);
+    const userId = member?.userId || memberId;
+    const assignment = getActiveAssignmentForMember(userId);
     if (assignment) {
       revokeAssignment(assignment.id);
       setMessageType('revoke');
@@ -881,7 +884,7 @@ const MembersPage = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm">
-                    {getActiveAssignmentForMember(member.id) ? (
+                    {getActiveAssignmentForMember(member.userId || member.id) ? (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         <CheckCircle size={12} className="mr-1" />
                         Active

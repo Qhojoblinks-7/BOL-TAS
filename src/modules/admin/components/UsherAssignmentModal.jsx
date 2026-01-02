@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserCheck, Clock, Key, AlertCircle, CheckCircle } from 'lucide-react';
+import { getAll } from '../../../utils/database';
 
 const UsherAssignmentModal = ({ member, onConfirm, onCancel }) => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -39,10 +40,16 @@ const UsherAssignmentModal = ({ member, onConfirm, onCancel }) => {
       const newCredentials = generateCredentials();
       const expirationTimestamp = getExpirationTimestamp();
 
+      // Find the user ID from personal code
+      const users = getAll('users');
+      const user = users.find(u => u.personalCode === member.personalCode);
+      const userId = user ? user.id : member.id; // Fallback to member.id if not found
+      const memberEmail = user ? user.email : member.email;
+
       const newAssignment = {
         id: `assignment_${Date.now()}`,
-        memberId: member.id,
-        memberEmail: member.email,
+        memberId: userId,
+        memberEmail: memberEmail,
         memberName: member.fullName,
         credentials: newCredentials,
         expiration: expirationTimestamp,
