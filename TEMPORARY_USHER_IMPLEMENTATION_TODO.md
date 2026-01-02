@@ -21,72 +21,72 @@ Implementation of the temporary usher assignment system as described in TEMPORAR
 ## Key Features to Implement
 
 ### 1. Admin Usher Assignment Interface
-- [ ] Add "Assign Usher Duty" button to MembersPage table actions
-- [ ] Create assignment modal with member selection confirmation
-- [ ] Generate unique temporary credentials (username/password) for each assignment
-- [ ] Set automatic expiration timestamp for 12:00 PM same day
-- [ ] Store assignment data in localStorage with member ID, credentials, and expiration
-- [ ] Display assignment status in member list (active/inactive assignments)
+- [x] Add "Assign Usher Duty" button to MembersPage table actions
+- [x] Create assignment modal with member selection confirmation
+- [x] Generate unique temporary credentials (username/password) for each assignment
+- [x] Set automatic expiration timestamp for 12:00 PM same day
+- [x] Store assignment data in database with member ID, credentials, and expiration
+- [x] Display assignment status in member list (active/inactive assignments)
 
 ### 2. Teen Portal Updates
-- [ ] Add useEffect to check for active usher assignments on component mount
-- [ ] Display "Usher Duty" button in navigation when assignment is active
-- [ ] Create UsherActivationModal component for credential input
-- [ ] Implement credential validation against stored assignments
-- [ ] Handle role transition from 'teen' to 'tempUsher' upon successful validation
-- [ ] Add visual feedback for assignment status
+- [x] Add useEffect to check for active usher assignments on component mount
+- [x] Display "Usher Duty" button in navigation when assignment is active
+- [x] Create UsherActivationModal component for credential input
+- [x] Implement credential validation against stored assignments
+- [x] Handle role transition from 'teen' to 'tempUsher' upon successful validation
+- [x] Add visual feedback for assignment status
 
 ### 3. Routing & Role Management
-- [ ] Extend App.jsx Routes to support 'tempUsher' role
-- [ ] Update role detection logic in App.jsx to handle tempUsher transitions
-- [ ] Ensure tempUsher has access to UsherTerminal but not admin features
-- [ ] Add role cleanup on expiration (return to 'teen')
+- [x] Extend App.jsx Routes to support 'tempUsher' role
+- [x] Update role detection logic in App.jsx to handle tempUsher transitions
+- [x] Ensure tempUsher has access to UsherTerminal but not admin features
+- [x] Add role cleanup on expiration (return to 'teen')
 
 ### 4. Usher Terminal Expiration
-- [ ] Add useEffect for continuous time checking in UsherTerminal
-- [ ] Implement auto-logout when current time >= 12:00 PM
-- [ ] Clear temporary role and redirect to teen portal
-- [ ] Add optional countdown timer display
-- [ ] Handle cleanup of expired assignments from localStorage
+- [x] Add useEffect for continuous time checking in UsherTerminal
+- [x] Implement auto-logout when current time >= 12:00 PM
+- [x] Clear temporary role and redirect to teen portal
+- [x] Add optional countdown timer display
+- [x] Handle cleanup of expired assignments from database
 
 ### 5. State Management & Persistence
-- [ ] Extend localStorage schema for temporary assignments
-- [ ] Add assignment data structure: {memberId, credentials, expiration, assignedBy, assignmentId}
-- [ ] Implement cross-tab synchronization for role changes
-- [ ] Add cleanup logic for expired assignments on app load
+- [x] Extend database schema for temporary assignments
+- [x] Add assignment data structure: {memberId, credentials, expiration, assignedBy, assignmentId}
+- [x] Implement cross-tab synchronization for role changes
+- [x] Add cleanup logic for expired assignments on app load
 
 ### 6. Admin Management Features
-- [ ] Add "Revoke Assignment" functionality to MembersPage
-- [ ] Display active assignments in UshersPage with member details
-- [ ] Allow early revocation of assignments before expiration
-- [ ] Add assignment history/audit trail (optional)
+- [x] Add "Revoke Assignment" functionality to MembersPage
+- [x] Display active assignments in UshersPage with member details
+- [x] Allow early revocation of assignments before expiration
+- [x] Add assignment history/audit trail (optional)
 
 ## Implementation Order
 
 ### Phase 1: Foundation (Routing & Roles)
-- [ ] Update App.jsx routing for tempUsher role
-- [ ] Extend role detection and state management
-- [ ] Add tempUsher to USER_ROLES constants
+- [x] Update App.jsx routing for tempUsher role
+- [x] Extend role detection and state management
+- [x] Add tempUsher to USER_ROLES constants
 
 ### Phase 2: Admin Assignment Interface
-- [ ] Modify MembersPage to include usher assignment actions
-- [ ] Implement credential generation logic
-- [ ] Add assignment storage and retrieval functions
+- [x] Modify MembersPage to include usher assignment actions
+- [x] Implement credential generation logic
+- [x] Add assignment storage and retrieval functions
 
 ### Phase 3: Teen Portal Integration
-- [ ] Update TeenPortal to detect and display assignments
-- [ ] Create UsherActivationModal component
-- [ ] Implement credential validation flow
+- [x] Update TeenPortal to detect and display assignments
+- [x] Create UsherActivationModal component
+- [x] Implement credential validation flow
 
 ### Phase 4: Usher Terminal Expiration
-- [ ] Add expiration monitoring to UsherTerminal
-- [ ] Implement auto-logout and role cleanup
-- [ ] Add visual time remaining indicators
+- [x] Add expiration monitoring to UsherTerminal
+- [x] Implement auto-logout and role cleanup
+- [x] Add visual time remaining indicators
 
 ### Phase 5: Management & Cleanup
-- [ ] Add assignment revocation features
-- [ ] Implement expired assignment cleanup
-- [ ] Add status monitoring and reporting
+- [x] Add assignment revocation features
+- [x] Implement expired assignment cleanup
+- [x] Add status monitoring and reporting
 
 ## Technical Requirements
 
@@ -108,22 +108,24 @@ Implementation of the temporary usher assignment system as described in TEMPORAR
 }
 ```
 
-### localStorage Keys
-- `userAccount`: existing user session
-- `temporaryAssignments`: array of active assignments
-- `attendanceLog`: existing attendance data
+### Database Collections
+- `users`: user accounts and profiles
+- `usherAssignments`: temporary usher assignments
+- `attendanceRecords`: attendance logging
+- `churchMembers`: member information
+- `shepherdingContacts`: pastoral care assignments
 
 ### Role Transitions
 - `teen` → `tempUsher` (on successful credential validation)
 - `tempUsher` → `teen` (on expiration or manual logout)
 
 ## Testing Scenarios
-- [ ] Admin assigns usher duty to member
-- [ ] Member sees "Usher Duty" button in teen portal
-- [ ] Member enters correct credentials and accesses usher terminal
-- [ ] Usher terminal auto-logs out at 12:00 PM
-- [ ] Admin can revoke assignment before expiration
-- [ ] Expired assignments are cleaned up automatically
+- [x] Admin assigns usher duty to member
+- [x] Member sees "Usher Duty" button in teen portal
+- [x] Member enters correct credentials and accesses usher terminal
+- [x] Usher terminal auto-logs out at 12:00 PM
+- [x] Admin can revoke assignment before expiration
+- [x] Expired assignments are cleaned up automatically
 
 ## Dependencies
 - Existing MembersPage, TeenPortal, UsherTerminal components
