@@ -2,8 +2,14 @@ import mockDatabase from '../data/mockDatabase.json';
 
 // Initialize database in localStorage if not exists
 const initializeDatabase = () => {
-  if (!localStorage.getItem('boltas_database')) {
+  let db = localStorage.getItem('boltas_database');
+  if (!db) {
     localStorage.setItem('boltas_database', JSON.stringify(mockDatabase));
+  } else {
+    db = JSON.parse(db);
+    // Ensure new collections are added
+    db.ushers = mockDatabase.ushers || [];
+    localStorage.setItem('boltas_database', JSON.stringify(db));
   }
 };
 

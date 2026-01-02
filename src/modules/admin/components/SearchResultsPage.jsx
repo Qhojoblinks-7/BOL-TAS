@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import mockDatabase from '../../../data/mockDatabase.json';
+import { getAll } from '../../../utils/database';
 import { useAddAttendanceRecordMutation } from '../../../services/attendanceApi';
 import SuccessOverlay from '../../usher/components/SuccessOverlay';
 
@@ -8,7 +8,7 @@ const SearchResultsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { searchResults } = location.state || { searchResults: [] };
-  const users = mockDatabase.users;
+  const users = getAll('users');
   const [addAttendanceRecord] = useAddAttendanceRecordMutation();
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [attendanceLog, setAttendanceLog] = useState(() => {

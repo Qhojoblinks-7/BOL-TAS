@@ -1,47 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart3, Users, UserCheck, UserPlus, TrendingUp, TrendingDown, Calendar, Clock, Activity, MapPin, Heart, CheckCircle, AlertCircle } from 'lucide-react';
 import SundayAttendanceCard from '@/components/shared/ui/sunday-attendance';
 import { AttendanceTrendsChart } from '@/components/shared/ui/chart';
+import { getAll } from '../../../utils/database';
 
 const StatisticsPage = () => {
   const [timeRange, setTimeRange] = useState('week');
-
-  // Mock comprehensive statistics data
-  const stats = {
+  const [stats, setStats] = useState({
     overview: {
-      totalMembers: 248,
-      activeMembers: 220,
-      todaysAttendance: 112,
-      firstTimers: 7,
-      retentionRate: 82,
-      totalAssignments: 5,
-      activeAssignments: 4,
-      inactiveAssignments: 1
+      totalMembers: 0,
+      activeMembers: 0,
+      todaysAttendance: 0,
+      firstTimers: 0,
+      retentionRate: 0,
+      totalAssignments: 0,
+      activeAssignments: 0,
+      inactiveAssignments: 0
     },
     attendance: {
-      thisWeek: 112,
-      lastWeek: 108,
-      change: 3.7,
-      locations: [
-        { name: 'Main Campus', attendance: 85, capacity: 150, percentage: 56.7 },
-        { name: 'East Legon', attendance: 15, capacity: 40, percentage: 37.5 },
-        { name: 'Cantonments', attendance: 8, capacity: 25, percentage: 32.0 },
-        { name: 'Tema', attendance: 4, capacity: 20, percentage: 20.0 }
-      ]
+      thisWeek: 0,
+      lastWeek: 0,
+      change: 0,
+      locations: []
     },
-    ushers: [
-      { name: 'Ameyaw Kofi', scans: 64, bolKeyEntries: 4, efficiency: 95 },
-      { name: 'Kwame Tetteh', scans: 50, bolKeyEntries: 1, efficiency: 87 },
-      { name: 'Sarah Mensah', scans: 42, bolKeyEntries: 2, efficiency: 91 },
-      { name: 'David Osei', scans: 38, bolKeyEntries: 0, efficiency: 83 }
-    ],
+    ushers: [],
     services: {
       averageDuration: '1h 45m',
       totalServices: 52,
       systemUptime: 99.8,
       averageEngagement: 78
     }
-  };
+  });
+
+  // Load statistics from database
+  useEffect(() => {
+    const loadStats = () => {
+      const users = getAll('users');
+      const attendanceRecords = getAll('attendanceRecords');
+      const shepherdingContacts = getAll('shepherdingContacts');
+
+      // Calculate overview stats
+      const totalMembers = users.filter(u => u.role === 'teen').length;
+      const activeMembers = totalMembers; // Assume all are active for now
+      const todaysAttendance = attendanceRecords.filter(r => {
+        const recordDate = new Date(r.timestamp).toISOString().split('T')[0];
+        const today = new Date().toISOString().split('T')[0];
+        return recordDate === today;
+      }).length;
+      const firstTimers = 0; // Not tracked in current data
+      const retentionRate = 82; // Mock
+      const totalAssignments = shepherdingContacts.length;
+      const activeAssignments = totalAssignments; // Assume all active
+
+      // Calculate attendance
+      const thisWeekRecords = attendanceRecords.filter(r => {
+        const recordDate = new Date(r.timestamp);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return recordDate >= weekAgo;
+      });
+      const thisWeek = thisWeekRecords.length;
+      const lastWeek = attendanceRecords.filter(r => {
+        const recordDate = new Date(r.timestamp);
+        const twoWeeksAgo = new Date();
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return recordDate >= twoWeeksAgo && recordDate < weekAgo;
+      }).length;
+      const change = lastWeek > 0 ? ((thisWeek - lastWeek) / lastWeek * 100) : 0;
+
+      // Locations (simplified)
+      const locations = [
+        { name: 'Main Campus', attendance: todaysAttendance, capacity: 150, percentage: (todaysAttendance / 150 * 100).toFixed(1) }
+      ];
+
+      // Ushers (mock for now)
+      const ushers = [
+        { name: 'Ameyaw Kofi', scans: 64, bolKeyEntries: 4, efficiency: 95 }
+      ];
+
+      setStats({
+        overview: {
+          totalMembers,
+          activeMembers,
+          todaysAttendance,
+          firstTimers,
+          retentionRate,
+          totalAssignments,
+          activeAssignments,
+          inactiveAssignments: 0
+        },
+        attendance: {
+          thisWeek,
+          lastWeek,
+          change: change.toFixed(1),
+          locations
+        },
+        ushers,
+        services: {
+          averageDuration: '1h 45m',
+          totalServices: 52,
+          systemUptime: 99.8,
+          averageEngagement: 78
+        }
+      });
+    };
+
+    loadStats();
+  }, []);
 
   const getChangeIcon = (change) => {
     return change > 0 ? <TrendingUp size={16} className="text-green-600" /> : <TrendingDown size={16} className="text-red-600" />;

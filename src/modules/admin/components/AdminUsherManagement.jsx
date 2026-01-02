@@ -2,25 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, RotateCcw, Eye, EyeOff, Mail, Phone, MapPin, Shield, CheckCircle, AlertCircle, Clock, UserCheck, QrCode } from 'lucide-react';
 import { getAllActiveAssignments, revokeAssignment } from '../../../utils/helpers';
+import { getAll, add, update, remove } from '../../../utils/database';
 
 const AdminUsherManagement = () => {
   const navigate = useNavigate();
-  const [ushers, setUshers] = useState([
-    {
-      id: 'USH-001',
-      fullName: 'John Smith',
-      email: 'john.smith@church.com',
-      phone: '(555) 123-4567',
-      location: 'Main Campus',
-      permissionLevel: 'Standard',
-      status: 'Active',
-      createdDate: '2024-01-15',
-      createdBy: 'Admin User',
-      lastLogin: '2024-12-30',
-      tempPassword: null,
-      showPassword: false
-    }
-  ]);
+  const [ushers, setUshers] = useState(getAll('ushers'));
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -55,7 +41,9 @@ const AdminUsherManagement = () => {
   }, []);
 
   const generateUsherId = () => {
-    return `USH-${String(ushers.length + 1).padStart(3, '0')}`;
+    const existingIds = ushers.map(u => parseInt(u.id.split('-')[1]));
+    const maxId = existingIds.length > 0 ? Math.max(...existingIds) : 0;
+    return `USH-${String(maxId + 1).padStart(3, '0')}`;
   };
 
   const handleCreateUsher = (e) => {
@@ -90,7 +78,8 @@ const AdminUsherManagement = () => {
       showPassword: true
     };
 
-    setUshers([...ushers, newUsher]);
+    add('ushers', newUsher);
+    setUshers(getAll('ushers'));
     setMessage(`Usher account created! Temporary password: ${tempPassword}. Email sent to ${formData.email}`);
     setMessageType('success');
 
@@ -110,11 +99,8 @@ const AdminUsherManagement = () => {
 
   const handleResetPassword = (usherId) => {
     const tempPassword = generateTemporaryPassword();
-    setUshers(ushers.map(usher =>
-      usher.id === usherId
-        ? { ...usher, tempPassword: tempPassword, showPassword: true }
-        : usher
-    ));
+    update('ushers', usherId, { tempPassword: tempPassword, showPassword: true });
+    setUshers(getAll('ushers'));
     const usher = ushers.find(u => u.id === usherId);
     setMessage(`Password reset for ${usher?.fullName}. New password: ${tempPassword}`);
     setMessageType('success');
@@ -130,9 +116,8 @@ const AdminUsherManagement = () => {
 
   const handleReactivateUsher = (usherId) => {
     const usher = ushers.find(u => u.id === usherId);
-    setUshers(ushers.map(u =>
-      u.id === usherId ? { ...u, status: 'Active' } : u
-    ));
+    update('ushers', usherId, { status: 'Active' });
+    setUshers(getAll('ushers'));
     setMessage(`${usher.fullName} has been reactivated.`);
     setMessageType('success');
     setTimeout(() => setMessage(''), 5000);
@@ -147,15 +132,14 @@ const AdminUsherManagement = () => {
 
   const executeConfirmAction = () => {
     if (confirmAction === 'deactivate') {
-      setUshers(ushers.map(u =>
-        u.id === confirmData.usherId ? { ...u, status: 'Inactive' } : u
-      ));
+      update('ushers', confirmData.usherId, { status: 'Inactive' });
       setMessage(`${confirmData.usher.fullName} has been deactivated.`);
     } else if (confirmAction === 'delete') {
-      setUshers(ushers.filter(u => u.id !== confirmData.usherId));
+      remove('ushers', confirmData.usherId);
       setMessage(`${confirmData.usher.fullName} has been deleted.`);
     }
 
+    setUshers(getAll('ushers'));
     setMessageType('success');
     setShowConfirmModal(false);
     setConfirmAction(null);
@@ -164,11 +148,9 @@ const AdminUsherManagement = () => {
   };
 
   const togglePasswordVisibility = (usherId) => {
-    setUshers(ushers.map(usher =>
-      usher.id === usherId
-        ? { ...usher, showPassword: !usher.showPassword }
-        : usher
-    ));
+    const usher = ushers.find(u => u.id === usherId);
+    update('ushers', usherId, { showPassword: !usher.showPassword });
+    setUshers(getAll('ushers'));
   };
 
   // Load temporary assignments

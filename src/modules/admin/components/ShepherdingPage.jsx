@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Phone, Mail, MapPin, Calendar, CheckCircle, AlertCircle, Plus, MessageSquare, Heart, X } from 'lucide-react';
+import { getAll } from '../../../utils/database';
 
 const ShepherdingPage = () => {
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -29,94 +30,43 @@ const ShepherdingPage = () => {
     return () => window.removeEventListener('globalSearch', handleGlobalSearch);
   }, []);
 
-  // Mock shepherding data
-  const [shepherdingAssignments] = useState([
-    {
-      id: 'S-001',
-      teenName: 'Ama Serwaa',
-      teenId: 'M-001',
-      shepherdName: 'Pastor Johnson',
-      shepherdEmail: 'pastor.johnson@church.com',
-      shepherdPhone: '(233) 24 111 2222',
-      location: 'East Legon',
-      assignmentDate: '2023-01-15',
-      lastContact: '2024-12-28',
-      contactFrequency: 'Weekly',
-      status: 'Active',
-      notes: 'Regular Bible study sessions. Good progress in spiritual growth.',
-      nextFollowUp: '2025-01-04',
-      attendanceStreak: 12,
-      concerns: []
-    },
-    {
-      id: 'S-002',
-      teenName: 'Emmanuel Kofi',
-      teenId: 'M-002',
-      shepherdName: 'Sister Mary',
-      shepherdEmail: 'sister.mary@church.com',
-      shepherdPhone: '(233) 20 333 4444',
-      location: 'Cantonments',
-      assignmentDate: '2022-09-10',
-      lastContact: '2024-12-20',
-      contactFrequency: 'Bi-weekly',
-      status: 'Active',
-      notes: 'Struggling with consistency. Needs encouragement.',
-      nextFollowUp: '2025-01-03',
-      attendanceStreak: 8,
-      concerns: ['Irregular attendance', 'Peer pressure']
-    },
-    {
-      id: 'S-003',
-      teenName: 'John Quaye',
-      teenId: 'M-003',
-      shepherdName: 'Brother David',
-      shepherdEmail: 'brother.david@church.com',
-      shepherdPhone: '(233) 27 555 6666',
-      location: 'Tema',
-      assignmentDate: '2024-02-20',
-      lastContact: '2024-12-15',
-      contactFrequency: 'Weekly',
-      status: 'Needs Attention',
-      notes: 'New member, adjusting well but needs more guidance.',
-      nextFollowUp: '2024-12-31',
-      attendanceStreak: 3,
-      concerns: ['New member orientation']
-    },
-    {
-      id: 'S-004',
-      teenName: 'Sarah Doe',
-      teenId: 'M-004',
-      shepherdName: 'Pastor Johnson',
-      shepherdEmail: 'pastor.johnson@church.com',
-      shepherdPhone: '(233) 24 111 2222',
-      location: 'East Legon',
-      assignmentDate: '2023-06-12',
-      lastContact: '2024-11-15',
-      contactFrequency: 'Monthly',
-      status: 'Inactive',
-      notes: 'Member became inactive. Attempting to re-engage.',
-      nextFollowUp: '2025-01-15',
-      attendanceStreak: 0,
-      concerns: ['Extended absence', 'Lost contact']
-    },
-    {
-      id: 'S-005',
-      teenName: 'Michael Owusu',
-      teenId: 'M-005',
-      shepherdName: 'Sister Mary',
-      shepherdEmail: 'sister.mary@church.com',
-      shepherdPhone: '(233) 20 333 4444',
-      location: 'Accra Central',
-      assignmentDate: '2022-11-08',
-      lastContact: '2024-12-30',
-      contactFrequency: 'Weekly',
-      status: 'Active',
-      notes: 'Excellent progress. Leading prayer meetings.',
-      nextFollowUp: '2025-01-06',
-      attendanceStreak: 15,
-      concerns: []
-    }
-  ]);
+  const [shepherdingAssignments, setShepherdingAssignments] = useState([]);
+
+  // Load shepherding data from database
+  useEffect(() => {
+    const loadShepherdingData = () => {
+      const contacts = getAll('shepherdingContacts');
+      const users = getAll('users');
+
+      // Transform contacts to assignment format
+      const transformedAssignments = contacts.map(contact => {
+        const shepherd = users.find(u => u.id === contact.shepherd);
+        const member = users.find(u => u.id === contact.member);
+
+        return {
+          id: contact.id,
+          teenName: member?.name || 'Unknown',
+          teenId: member?.personalCode || 'Unknown',
+          shepherdName: shepherd?.name || 'Unknown',
+          shepherdEmail: shepherd?.email || 'unknown@church.com',
+          shepherdPhone: contact.contactInfo,
+          location: 'Main Campus', // Default, could be enhanced
+          assignmentDate: '2024-01-01', // Default
+          lastContact: new Date(contact.lastContact).toISOString().split('T')[0],
+          contactFrequency: 'Weekly', // Default
+          status: 'Active', // Default
+          notes: contact.notes,
+          nextFollowUp: '2025-01-01', // Default
+          attendanceStreak: 0, // Default
+          concerns: []
+        };
+      });
+
+      setShepherdingAssignments(transformedAssignments);
+    };
+
+    loadShepherdingData();
+  }, []);
 
   const locations = [
     'East Legon',

@@ -1,14 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/shared/ui/button';
 import { FileSpreadsheet, UserPlus, Phone, User, CheckCircle, AlertCircle, X } from 'lucide-react';
 import SundayAttendanceCard from '@/components/shared/ui/sunday-attendance';
 import { AttendanceTrendsChart } from '@/components/shared/ui/chart';
+import { getAll } from '../../../utils/database';
 
 const AdminMain = () => {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [showCallModal, setShowCallModal] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState(null);
+  const [shepherdingList, setShepherdingList] = useState([]);
+  const [stats, setStats] = useState({
+    totalTeens: 0,
+    todaysPresence: 0,
+    firstTimers: 0,
+    avgRetention: 0
+  });
+
+  // Load data from database
+  useEffect(() => {
+    const loadData = () => {
+      const contacts = getAll('shepherdingContacts');
+      const users = getAll('users');
+      const attendanceRecords = getAll('attendanceRecords');
+
+      // Transform shepherding contacts
+      const transformedContacts = contacts.map(contact => {
+        const shepherd = users.find(u => u.id === contact.shepherd);
+        const member = users.find(u => u.id === contact.member);
+
+        return {
+          name: member?.name || 'Unknown',
+          weeksAbsent: 0, // Default, could calculate
+          phone: contact.contactInfo
+        };
+      });
+
+      setShepherdingList(transformedContacts.slice(0, 3)); // Show first 3
+
+      // Calculate stats
+      const totalTeens = users.filter(u => u.role === 'teen').length;
+      const todaysAttendance = attendanceRecords.filter(r => {
+        const recordDate = new Date(r.timestamp).toISOString().split('T')[0];
+        const today = new Date().toISOString().split('T')[0];
+        return recordDate === today;
+      }).length;
+
+      setStats({
+        totalTeens,
+        todaysPresence: todaysAttendance,
+        firstTimers: 0, // Not tracked
+        avgRetention: 82 // Mock
+      });
+    };
+
+    loadData();
+  }, []);
 
   const handleExportExcel = () => {
     // Mock data for export
@@ -85,36 +133,21 @@ const AdminMain = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 shadow-lg">
           <h3 className="text-lg font-semibold mb-4">Shepherding List</h3>
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-               <div className="flex items-center">
-                 <User className="mr-2 h-4 w-4" />
-                 <p className="font-medium">Ama Serwaa</p>
-               </div>
-               <p className="text-sm text-muted-foreground">4 weeks absent</p>
-               <Button size="sm" style={{ backgroundColor: 'hsl(186, 70%, 34%)', color: 'white', border: 'none' }} onClick={() => handleCallShepherd({ name: 'Ama Serwaa', phone: '(233) 24 123 4567' })}>
-                 <Phone className="h-4 w-4" />
-               </Button>
-             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <User className="mr-2 h-4 w-4" />
-                <p className="font-medium">Emmanuel K.</p>
+            {shepherdingList.map((person, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  <p className="font-medium">{person.name}</p>
+                </div>
+                <p className="text-sm text-muted-foreground">{person.weeksAbsent} weeks absent</p>
+                <Button size="sm" style={{ backgroundColor: 'hsl(186, 70%, 34%)', color: 'white', border: 'none' }} onClick={() => handleCallShepherd({ name: person.name, phone: person.phone })}>
+                  <Phone className="h-4 w-4" />
+                </Button>
               </div>
-              <p className="text-sm text-muted-foreground">2 weeks absent</p>
-              <Button size="sm" style={{ backgroundColor: 'hsl(186, 70%, 34%)', color: 'white', border: 'none' }} onClick={() => handleCallShepherd({ name: 'Emmanuel K.', phone: '(233) 20 987 6543' })}>
-                 <Phone className="h-4 w-4" />
-               </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <User className="mr-2 h-4 w-4" />
-                <p className="font-medium">John Quaye</p>
-              </div>
-              <p className="text-sm text-muted-foreground">Absent last week</p>
-              <Button size="sm" style={{ backgroundColor: 'hsl(186, 70%, 34%)', color: 'white', border: 'none' }} onClick={() => handleCallShepherd({ name: 'John Quaye', phone: '(233) 27 555 1234' })}>
-                 <Phone className="h-4 w-4" />
-               </Button>
-            </div>
+            ))}
+            {shepherdingList.length === 0 && (
+              <p className="text-sm text-muted-foreground">No shepherding assignments found.</p>
+            )}
           </div>
         </div>
       </div>
@@ -130,28 +163,28 @@ const AdminMain = () => {
             <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg flex flex-col">
               <h4 className="text-sm font-medium text-muted-foreground whitespace-nowrap">Total Teens</h4>
               <div className="self-end text-right mt-2">
-                <p className="text-4xl font-bold inline">248</p>
+                <p className="text-4xl font-bold inline">{stats.totalTeens}</p>
                 <p className="text-sm text-[#1a8995] inline ml-2">+12%</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg flex flex-col">
               <h4 className="text-sm font-medium text-muted-foreground whitespace-nowrap">Today's Presence</h4>
               <div className="self-end text-right mt-2">
-                <p className="text-4xl font-bold inline">112</p>
-                <p className="text-sm text-muted-foreground inline ml-2">45% total</p>
+                <p className="text-4xl font-bold inline">{stats.todaysPresence}</p>
+                <p className="text-sm text-muted-foreground inline ml-2">{stats.totalTeens > 0 ? Math.round((stats.todaysPresence / stats.totalTeens) * 100) : 0}% total</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg flex flex-col">
               <h4 className="text-sm font-medium text-muted-foreground whitespace-nowrap">First Timers</h4>
               <div className="self-end text-right mt-2">
-                <p className="text-4xl font-bold inline">7</p>
+                <p className="text-4xl font-bold inline">{stats.firstTimers}</p>
                 <p className="text-sm text-muted-foreground inline ml-2">New souls</p>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg flex flex-col">
               <h4 className="text-sm font-medium text-muted-foreground whitespace-nowrap">Avg. Retention</h4>
               <div className="self-end text-right mt-2">
-                <p className="text-4xl font-bold">82%</p>
+                <p className="text-4xl font-bold">{stats.avgRetention}%</p>
               </div>
             </div>
           </div>

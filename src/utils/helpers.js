@@ -1,4 +1,5 @@
 // Helper functions
+import mockDatabase from '../data/mockDatabase.json'; // eslint-disable-line no-unused-vars
 
 export const generateId = () => {
   return Math.random().toString(36).substr(2, 9);

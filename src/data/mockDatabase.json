@@ -209,5 +209,21 @@
       "lastContact": "2024-12-20T15:00:00Z",
       "notes": "Discussed youth group participation"
     }
+  ],
+  "ushers": [
+    {
+      "id": "USH-001",
+      "fullName": "John Smith",
+      "email": "john.smith@church.com",
+      "phone": "(555) 123-4567",
+      "location": "Main Campus",
+      "permissionLevel": "Standard",
+      "status": "Active",
+      "createdDate": "2024-01-15",
+      "createdBy": "Admin User",
+      "lastLogin": "2024-12-30",
+      "tempPassword": null,
+      "showPassword": false
+    }
   ]
 }
