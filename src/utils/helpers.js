@@ -88,6 +88,7 @@ export const getActiveAssignmentForEmail = (email) => {
 
 export const getAllActiveAssignments = () => {
   const assignments = getAll('usherAssignments');
+  const users = getAll('users');
   const now = Date.now();
 
   return assignments
@@ -95,17 +96,24 @@ export const getAllActiveAssignments = () => {
       assignment.status === 'active' &&
       new Date(assignment.expiresAt) > now
     )
-    .map(assignment => ({
-      id: assignment.id,
-      memberId: assignment.userId,
-      memberEmail: assignment.memberEmail,
-      memberName: assignment.memberName || 'Unknown',
-      credentials: assignment.credentials,
-      expiration: assignment.expiresAt,
-      assignedBy: assignment.assignedBy,
-      assignedAt: assignment.assignedAt,
-      status: assignment.status
-    }));
+    .map(assignment => {
+      let memberName = assignment.memberName;
+      if (!memberName) {
+        const user = users.find(u => u.id === assignment.userId);
+        memberName = user?.name || 'Unknown';
+      }
+      return {
+        id: assignment.id,
+        memberId: assignment.userId,
+        memberEmail: assignment.memberEmail,
+        memberName: memberName,
+        credentials: assignment.credentials,
+        expiration: assignment.expiresAt,
+        assignedBy: assignment.assignedBy,
+        assignedAt: assignment.assignedAt,
+        status: assignment.status
+      };
+    });
 };
 
 export const revokeAssignment = (assignmentId) => {
