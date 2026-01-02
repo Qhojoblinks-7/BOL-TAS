@@ -7,9 +7,11 @@ import MembersPage from './modules/admin/components/MembersPage';
 import AttendancePage from './modules/admin/components/AttendancePage';
 import UshersPage from './modules/admin/components/UshersPage';
 import ShepherdingPage from './modules/admin/components/ShepherdingPage';
+import AdminHelpTab from './modules/admin/components/AdminHelpTab';
 import TeenPortal from './modules/teen/components/TeenPortal';
 import EditProfile from './modules/teen/components/EditProfile';
 import UsherTerminal from './modules/usher/components/UsherTerminal';
+import AdminUsherTerminal from './modules/admin/components/AdminUsherTerminal';
 import CreateAccount from './components/auth/CreateAccount';
 import Login from './components/auth/Login';
 import { cleanupExpiredAssignments } from './utils/helpers';
@@ -95,7 +97,8 @@ function App() {
             <Route path="/attendance" element={<AdminLayout><AttendancePage /></AdminLayout>} />
             <Route path="/ushers" element={<AdminLayout><UshersPage /></AdminLayout>} />
             <Route path="/shepherding" element={<AdminLayout><ShepherdingPage /></AdminLayout>} />
-            <Route path="/usher" element={<UsherTerminal />} />
+            <Route path="/help" element={<AdminLayout><AdminHelpTab /></AdminLayout>} />
+            <Route path="/usher" element={<AdminLayout><AdminUsherTerminal /></AdminLayout>} />
           </>
         )}
 

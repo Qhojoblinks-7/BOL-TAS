@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/shared/ui/button';
 import { Badge } from '@/components/shared/ui/badge';
 import { cn } from '@/utils/cn';
-import { BarChart3, Users, Calendar, UserCheck, List, LayoutGrid, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { BarChart3, Users, Calendar, UserCheck, List, LayoutGrid, ChevronLeft, ChevronRight, LogOut, HelpCircle } from 'lucide-react';
 
 const navItems = [
   { name: 'Overview', href: '/overview', icon: LayoutGrid },
@@ -12,6 +12,7 @@ const navItems = [
   { name: 'Attendance', href: '/attendance', icon: Calendar },
   { name: 'Ushers', href: '/ushers', icon: UserCheck },
   { name: 'Shepherding list', href: '/shepherding', icon: List },
+  { name: 'Help', href: '/help', icon: HelpCircle },
 ];
 
 const Sidebar = ({ className, onToggle }) => {

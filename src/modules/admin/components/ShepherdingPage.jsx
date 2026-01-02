@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, Phone, Mail, MapPin, Calendar, CheckCircle, AlertCircle, Plus, Search, Filter, MessageSquare, Heart, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Phone, Mail, MapPin, Calendar, CheckCircle, AlertCircle, Plus, MessageSquare, Heart, X } from 'lucide-react';
 
 const ShepherdingPage = () => {
   const [selectedLocation, setSelectedLocation] = useState('all');
@@ -16,6 +16,18 @@ const ShepherdingPage = () => {
   });
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+
+  // Listen for global search events
+  useEffect(() => {
+    const handleGlobalSearch = (event) => {
+      if (event.detail.page === 'shepherding') {
+        setSearchTerm(event.detail.searchTerm);
+      }
+    };
+
+    window.addEventListener('globalSearch', handleGlobalSearch);
+    return () => window.removeEventListener('globalSearch', handleGlobalSearch);
+  }, []);
 
   // Mock shepherding data
   const [shepherdingAssignments] = useState([
@@ -124,8 +136,8 @@ const ShepherdingPage = () => {
 
   const filteredAssignments = shepherdingAssignments.filter(assignment => {
     const matchesSearch = assignment.teenName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.shepherdName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         assignment.teenId.toLowerCase().includes(searchTerm.toLowerCase());
+                          assignment.shepherdName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          assignment.teenId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLocation = selectedLocation === 'all' || assignment.location === selectedLocation;
     return matchesSearch && matchesLocation;
   });
@@ -196,13 +208,30 @@ const ShepherdingPage = () => {
           <h1 className="text-3xl font-bold text-black">Shepherding Management</h1>
           <p className="text-sm text-gray-600 mt-1">Monitor shepherding relationships and follow-ups</p>
         </div>
-        <button
-          onClick={() => setShowAssignModal(true)}
-          className="flex items-center gap-2 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
-        >
-          <Plus size={20} />
-          Assign Shepherd
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Location Filter */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Location:</label>
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20"
+            >
+              <option value="all">All Locations</option>
+              {locations.map(loc => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
+          </div>
+          {/* Action Button */}
+          <button
+            onClick={() => setShowAssignModal(true)}
+            className="flex items-center gap-2 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
+          >
+            <Plus size={20} />
+            Assign Shepherd
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -255,37 +284,6 @@ const ShepherdingPage = () => {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20"
-            >
-              <option value="all">All Locations</option>
-              {locations.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by teen or shepherd name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Shepherding Assignments Table */}
       <div className="bg-white/10 backdrop-blur-md rounded-xl shadow-lg border border-white/20 overflow-hidden">

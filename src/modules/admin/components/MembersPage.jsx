@@ -1,71 +1,90 @@
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Download, Search, User, Mail, Phone, MapPin, Calendar, Filter, CheckCircle, AlertCircle, UserCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Edit, Trash2, Download, User, Mail, Phone, MapPin, Calendar, Filter, CheckCircle, AlertCircle, UserCheck } from 'lucide-react';
 import UsherAssignmentModal from './UsherAssignmentModal';
 import { saveTemporaryAssignment, getActiveAssignmentForMember, revokeAssignment } from '@/utils/helpers.js';
+import { getAll, add, remove } from '../../../utils/database';
 
 const MembersPage = () => {
-  const [members, setMembers] = useState([
-    {
-      id: 'M-001',
-      fullName: 'Ama Serwaa',
-      email: 'ama.serwaa@email.com',
-      phone: '(233) 24 123 4567',
-      location: 'East Legon',
-      dateOfBirth: '2008-05-15',
-      joinDate: '2023-01-15',
-      status: 'Active',
-      lastAttendance: '2024-12-30',
-      attendanceStreak: 12
-    },
-    {
-      id: 'M-002',
-      fullName: 'Emmanuel Kofi',
-      email: 'emmanuel.k@email.com',
-      phone: '(233) 20 987 6543',
-      location: 'Cantonments',
-      dateOfBirth: '2007-08-22',
-      joinDate: '2022-09-10',
-      status: 'Active',
-      lastAttendance: '2024-12-30',
-      attendanceStreak: 8
-    },
-    {
-      id: 'M-003',
-      fullName: 'John Quaye',
-      email: 'john.quaye@email.com',
-      phone: '(233) 27 555 1234',
-      location: 'Tema',
-      dateOfBirth: '2009-03-10',
-      joinDate: '2024-02-20',
-      status: 'Active',
-      lastAttendance: '2024-12-23',
-      attendanceStreak: 3
-    },
-    {
-      id: 'M-004',
-      fullName: 'Sarah Doe',
-      email: 'sarah.doe@email.com',
-      phone: '(233) 24 777 8888',
-      location: 'East Legon',
-      dateOfBirth: '2008-11-05',
-      joinDate: '2023-06-12',
-      status: 'Inactive',
-      lastAttendance: '2024-11-15',
-      attendanceStreak: 0
-    },
-    {
-      id: 'M-005',
-      fullName: 'Michael Owusu',
-      email: 'michael.owusu@email.com',
-      phone: '(233) 50 111 2222',
-      location: 'Accra Central',
-      dateOfBirth: '2007-12-18',
-      joinDate: '2022-11-08',
-      status: 'Active',
-      lastAttendance: '2024-12-30',
-      attendanceStreak: 15
-    }
-  ]);
+  const [members, setMembers] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState('all');
+  const [globalSearchTerm, setGlobalSearchTerm] = useState('');
+
+  // Load real member data from database
+  useEffect(() => {
+    const loadMembers = () => {
+      try {
+        const churchMembers = getAll('churchMembers');
+        const users = getAll('users');
+        const attendanceRecords = getAll('attendanceRecords');
+
+        // Transform church members to display format with user data
+        const transformedMembers = churchMembers.map(member => {
+          const user = users.find(u => u.personalCode === member.personalCode);
+
+          // Calculate attendance streak for this member
+          const memberAttendance = attendanceRecords
+            .filter(record => {
+              const recordUser = users.find(u => u.id === record.userId);
+              return recordUser && recordUser.personalCode === member.personalCode;
+            })
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+          // Simple streak calculation (consecutive weeks)
+          let streak = 0;
+          if (memberAttendance.length > 0) {
+            const latestDate = new Date(memberAttendance[0].timestamp);
+            for (let i = 0; i < memberAttendance.length; i++) {
+              const recordDate = new Date(memberAttendance[i].timestamp);
+              const weeksDiff = Math.floor((latestDate - recordDate) / (7 * 24 * 60 * 60 * 1000));
+              if (weeksDiff === i) {
+                streak++;
+              } else {
+                break;
+              }
+            }
+          }
+
+          return {
+            id: member.id,
+            fullName: member.name,
+            email: user?.email || `${member.name.toLowerCase().replace(' ', '.')}@email.com`,
+            phone: user?.profile?.phoneNumber || '(233) 24 123 4567',
+            location: member.area,
+            dateOfBirth: `${member.birthYear}-01-01`, // Approximate from birth year
+            joinDate: user?.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : '2024-01-01',
+            status: 'Active', // Assume active unless specified
+            lastAttendance: memberAttendance.length > 0 ?
+              new Date(memberAttendance[0].timestamp).toISOString().split('T')[0] : null,
+            attendanceStreak: streak,
+            personalCode: member.personalCode,
+            parent: member.parent
+          };
+        });
+
+        setMembers(transformedMembers);
+      } catch (error) {
+        console.error('Error loading members:', error);
+        // Fallback to empty array
+        setMembers([]);
+      }
+    };
+
+    loadMembers();
+
+    // Listen for global search events
+    const handleGlobalSearch = (event) => {
+      const { searchTerm: globalTerm, page } = event.detail;
+      if (page === 'members') {
+        setGlobalSearchTerm(globalTerm);
+      }
+    };
+
+    window.addEventListener('globalSearch', handleGlobalSearch);
+
+    return () => {
+      window.removeEventListener('globalSearch', handleGlobalSearch);
+    };
+  }, []);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -74,8 +93,6 @@ const MembersPage = () => {
   const [confirmData, setConfirmData] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
   const [assigningMember, setAssigningMember] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('all');
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -98,60 +115,144 @@ const MembersPage = () => {
   ];
 
   const filteredMembers = members.filter(member => {
-    const matchesSearch = member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = !globalSearchTerm ||
+                          member.fullName.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+                          member.email.toLowerCase().includes(globalSearchTerm.toLowerCase()) ||
+                          member.id.toLowerCase().includes(globalSearchTerm.toLowerCase());
     const matchesLocation = selectedLocation === 'all' || member.location === selectedLocation;
     return matchesSearch && matchesLocation;
   });
 
   const generateMemberId = () => {
-    return `M-${String(members.length + 1).padStart(3, '0')}`;
+    const existingMembers = getAll('churchMembers');
+    const nextId = existingMembers.length + 1;
+    return `member_${String(nextId).padStart(3, '0')}`;
   };
 
   const handleAddMember = (e) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.location) {
+    if (!formData.fullName || !formData.location) {
       setMessageType('error');
       return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setMessageType('error');
-      return;
-    }
+    // Generate personal code for the member
+    const personalCode = Math.floor(10000 + Math.random() * 90000).toString();
 
     const newMember = {
       id: generateMemberId(),
-      fullName: formData.fullName,
-      email: formData.email,
-      phone: formData.phone,
-      location: formData.location,
-      dateOfBirth: formData.dateOfBirth,
-      joinDate: formData.joinDate || new Date().toISOString().split('T')[0],
-      status: formData.status,
-      lastAttendance: null,
-      attendanceStreak: 0
+      name: formData.fullName,
+      area: formData.location,
+      parent: 'TBD', // To be determined
+      birthYear: formData.dateOfBirth ? new Date(formData.dateOfBirth).getFullYear().toString() : '2008',
+      personalCode: personalCode
     };
 
-    setMembers([...members, newMember]);
-    setMessageType('success');
-    setShowAddModal(false);
+    try {
+      // Add to churchMembers collection
+      add('churchMembers', newMember);
 
-    // Reset form
-    setFormData({
-      fullName: '',
-      email: '',
-      phone: '',
-      location: '',
-      dateOfBirth: '',
-      joinDate: '',
-      status: 'Active'
-    });
+      // Create corresponding user account if email provided
+      if (formData.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+          setMessageType('error');
+          return;
+        }
 
-    setTimeout(() => setMessageType(''), 3000);
+        const newUser = {
+          id: `user_${Date.now()}`,
+          name: formData.fullName,
+          email: formData.email,
+          password: 'password123', // Default password
+          role: 'teen',
+          personalCode: personalCode,
+          createdAt: new Date().toISOString(),
+          profile: {
+            fullName: formData.fullName,
+            preferredName: formData.fullName.split(' ')[0],
+            dateOfBirth: formData.dateOfBirth,
+            phoneNumber: formData.phone,
+            guardianName: 'TBD',
+            ministry: 'TBD',
+            membershipStatus: 'Active Member',
+            parentalConsent: true,
+            attendanceRecords: '0/52 (0%)',
+            volunteerRoles: 'None',
+            points: '0'
+          }
+        };
+
+        add('users', newUser);
+      }
+
+      // Reload members to show the new addition
+      const updatedMembers = getAll('churchMembers');
+      const users = getAll('users');
+      const attendanceRecords = getAll('attendanceRecords');
+
+      const transformedMembers = updatedMembers.map(member => {
+        const user = users.find(u => u.personalCode === member.personalCode);
+        const memberAttendance = attendanceRecords
+          .filter(record => {
+            const recordUser = users.find(u => u.id === record.userId);
+            return recordUser && recordUser.personalCode === member.personalCode;
+          })
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        let streak = 0;
+        if (memberAttendance.length > 0) {
+          const latestDate = new Date(memberAttendance[0].timestamp);
+          for (let i = 0; i < memberAttendance.length; i++) {
+            const recordDate = new Date(memberAttendance[i].timestamp);
+            const weeksDiff = Math.floor((latestDate - recordDate) / (7 * 24 * 60 * 60 * 1000));
+            if (weeksDiff === i) {
+              streak++;
+            } else {
+              break;
+            }
+          }
+        }
+
+        return {
+          id: member.id,
+          fullName: member.name,
+          email: user?.email || `${member.name.toLowerCase().replace(' ', '.')}@email.com`,
+          phone: user?.profile?.phoneNumber || '(233) 24 123 4567',
+          location: member.area,
+          dateOfBirth: `${member.birthYear}-01-01`,
+          joinDate: user?.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : '2024-01-01',
+          status: 'Active',
+          lastAttendance: memberAttendance.length > 0 ?
+            new Date(memberAttendance[0].timestamp).toISOString().split('T')[0] : null,
+          attendanceStreak: streak,
+          personalCode: member.personalCode,
+          parent: member.parent
+        };
+      });
+
+      setMembers(transformedMembers);
+      setMessageType('success');
+      setShowAddModal(false);
+
+      // Reset form
+      setFormData({
+        fullName: '',
+        email: '',
+        phone: '',
+        location: '',
+        dateOfBirth: '',
+        joinDate: '',
+        status: 'Active'
+      });
+
+      setTimeout(() => setMessageType(''), 3000);
+    } catch (error) {
+      console.error('Error adding member:', error);
+      setMessageType('error');
+      setTimeout(() => setMessageType(''), 3000);
+    }
   };
 
   const exportMembers = () => {
@@ -278,9 +379,73 @@ const MembersPage = () => {
 
   const executeConfirmAction = () => {
     if (confirmAction === 'delete') {
-      setMembers(members.filter(m => m.id !== confirmData.memberId));
-      setMessageType('delete');
-      setTimeout(() => setMessageType(''), 3000);
+      try {
+        // Remove from churchMembers collection
+        remove('churchMembers', confirmData.memberId);
+
+        // Also remove associated user account if it exists
+        const users = getAll('users');
+        const member = members.find(m => m.id === confirmData.memberId);
+        if (member) {
+          const user = users.find(u => u.personalCode === member.personalCode);
+          if (user) {
+            remove('users', user.id);
+          }
+        }
+
+        // Reload members
+        const updatedMembers = getAll('churchMembers');
+        const updatedUsers = getAll('users');
+        const attendanceRecords = getAll('attendanceRecords');
+
+        const transformedMembers = updatedMembers.map(member => {
+          const user = updatedUsers.find(u => u.personalCode === member.personalCode);
+          const memberAttendance = attendanceRecords
+            .filter(record => {
+              const recordUser = updatedUsers.find(u => u.id === record.userId);
+              return recordUser && recordUser.personalCode === member.personalCode;
+            })
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+          let streak = 0;
+          if (memberAttendance.length > 0) {
+            const latestDate = new Date(memberAttendance[0].timestamp);
+            for (let i = 0; i < memberAttendance.length; i++) {
+              const recordDate = new Date(memberAttendance[i].timestamp);
+              const weeksDiff = Math.floor((latestDate - recordDate) / (7 * 24 * 60 * 60 * 1000));
+              if (weeksDiff === i) {
+                streak++;
+              } else {
+                break;
+              }
+            }
+          }
+
+          return {
+            id: member.id,
+            fullName: member.name,
+            email: user?.email || `${member.name.toLowerCase().replace(' ', '.')}@email.com`,
+            phone: user?.profile?.phoneNumber || '(233) 24 123 4567',
+            location: member.area,
+            dateOfBirth: `${member.birthYear}-01-01`,
+            joinDate: user?.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : '2024-01-01',
+            status: 'Active',
+            lastAttendance: memberAttendance.length > 0 ?
+              new Date(memberAttendance[0].timestamp).toISOString().split('T')[0] : null,
+            attendanceStreak: streak,
+            personalCode: member.personalCode,
+            parent: member.parent
+          };
+        });
+
+        setMembers(transformedMembers);
+        setMessageType('delete');
+        setTimeout(() => setMessageType(''), 3000);
+      } catch (error) {
+        console.error('Error deleting member:', error);
+        setMessageType('error');
+        setTimeout(() => setMessageType(''), 3000);
+      }
     }
 
     setShowConfirmModal(false);
@@ -305,21 +470,38 @@ const MembersPage = () => {
           <h1 className="text-3xl font-bold text-black">Members Management</h1>
           <p className="text-sm text-gray-600 mt-1">Manage teen members and their information</p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={exportMembers}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
-          >
-            <Download size={20} />
-            Export CSV
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
-          >
-            <Plus size={20} />
-            Add Member
-          </button>
+        <div className="flex items-center gap-4">
+          {/* Location Filter */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Location:</label>
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20 text-sm"
+            >
+              <option value="all">All Locations</option>
+              {locations.map(loc => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
+          </div>
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={exportMembers}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
+            >
+              <Download size={20} />
+              Export CSV
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
+            >
+              <Plus size={20} />
+              Add Member
+            </button>
+          </div>
         </div>
       </div>
 
@@ -372,42 +554,13 @@ const MembersPage = () => {
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20"
-            >
-              <option value="all">All Locations</option>
-              {locations.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name, email, or ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Add Member Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            {/* Accessibility: Screen reader title */}
+            <h1 className="sr-only">Add New Member Modal</h1>
             <h2 className="text-2xl font-bold text-black mb-4">Add New Member</h2>
 
             <form onSubmit={handleAddMember} className="space-y-4">
@@ -509,6 +662,8 @@ const MembersPage = () => {
       {showEditModal && editingMember && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            {/* Accessibility: Screen reader title */}
+            <h1 className="sr-only">Edit Member Modal</h1>
             <h2 className="text-2xl font-bold text-black mb-4">Edit Member</h2>
 
             <form onSubmit={handleUpdateMember} className="space-y-4">
@@ -635,6 +790,8 @@ const MembersPage = () => {
       {showConfirmModal && confirmData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl">
+            {/* Accessibility: Screen reader title */}
+            <h1 className="sr-only">Confirm Member Deletion Modal</h1>
             <div className="text-center">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Trash2 size={32} className="text-red-600" />

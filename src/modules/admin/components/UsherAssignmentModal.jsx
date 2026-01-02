@@ -84,6 +84,8 @@ const UsherAssignmentModal = ({ member, onConfirm, onCancel }) => {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        {/* Accessibility: Screen reader title */}
+        <h1 className="sr-only">Assign Usher Duty Modal</h1>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
             <UserCheck size={24} className="text-green-600" />

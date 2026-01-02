@@ -1,69 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Filter, Download, Search, Users, Clock, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
+import { getAll } from '../../../utils/database';
 
 const AttendancePage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedLocation, setSelectedLocation] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
 
-  // Mock attendance data
-  const [attendanceRecords] = useState([
-    {
-      id: 'ATT-001',
-      teenName: 'Ama Serwaa',
-      teenId: 'T-001',
-      location: 'East Legon',
-      checkInTime: '09:15 AM',
-      status: 'Present',
-      usher: 'John Smith',
-      date: '2024-12-30',
-      notes: ''
-    },
-    {
-      id: 'ATT-002',
-      teenName: 'Emmanuel K.',
-      teenId: 'T-002',
-      location: 'Cantonments',
-      checkInTime: '09:22 AM',
-      status: 'Present',
-      usher: 'Kwame Tetteh',
-      date: '2024-12-30',
-      notes: ''
-    },
-    {
-      id: 'ATT-003',
-      teenName: 'John Quaye',
-      teenId: 'T-003',
-      location: 'Tema',
-      checkInTime: '10:05 AM',
-      status: 'Present',
-      usher: 'Ameyaw Kofi',
-      date: '2024-12-30',
-      notes: ''
-    },
-    {
-      id: 'ATT-004',
-      teenName: 'Sarah Doe',
-      teenId: 'T-004',
-      location: 'East Legon',
-      checkInTime: null,
-      status: 'Absent',
-      usher: null,
-      date: '2024-12-30',
-      notes: 'Called - sick'
-    },
-    {
-      id: 'ATT-005',
-      teenName: 'Michael O.',
-      teenId: 'T-005',
-      location: 'Accra Central',
-      checkInTime: '09:30 AM',
-      status: 'Present',
-      usher: 'John Smith',
-      date: '2024-12-30',
-      notes: ''
-    }
-  ]);
+  // Load real attendance data
+  useEffect(() => {
+    const loadAttendanceData = () => {
+      const records = getAll('attendanceRecords');
+      const users = getAll('users');
+      const members = getAll('churchMembers');
+
+      // Transform database records to display format
+      const transformedRecords = records.map(record => {
+        const user = users.find(u => u.id === record.userId);
+        const member = members.find(m => m.personalCode === user?.personalCode);
+
+        return {
+          id: record.id,
+          teenName: user?.name || member?.name || 'Unknown',
+          teenId: user?.personalCode || member?.personalCode || 'Unknown',
+          location: record.location || 'Main Sanctuary',
+          checkInTime: record.timestamp ? new Date(record.timestamp).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+          }) : null,
+          status: 'Present', // All records in database are attendance records
+          usher: 'System', // Could be enhanced to track actual ushers
+          date: record.timestamp ? new Date(record.timestamp).toISOString().split('T')[0] : selectedDate,
+          notes: '',
+          method: record.method,
+          service: record.service
+        };
+      });
+
+      setAttendanceRecords(transformedRecords);
+    };
+
+    loadAttendanceData();
+  }, [selectedDate]);
 
   const locations = [
     'East Legon',
@@ -77,9 +56,7 @@ const AttendancePage = () => {
   const filteredRecords = attendanceRecords.filter(record => {
     const matchesDate = record.date === selectedDate;
     const matchesLocation = selectedLocation === 'all' || record.location === selectedLocation;
-    const matchesSearch = record.teenName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.teenId.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesDate && matchesLocation && matchesSearch;
+    return matchesDate && matchesLocation;
   });
 
   const getStatusColor = (status) => {
@@ -116,7 +93,7 @@ const AttendancePage = () => {
 
   const totalTeens = attendanceRecords.filter(r => r.date === selectedDate).length;
   const presentCount = attendanceRecords.filter(r => r.date === selectedDate && r.status === 'Present').length;
-  const absentCount = attendanceRecords.filter(r => r.date === selectedDate && r.status === 'Absent').length;
+  const absentCount = 0; // For now, we only have present records in the database
 
   return (
     <div className="flex-1 flex flex-col space-y-4 p-4 md:p-6">
@@ -126,13 +103,41 @@ const AttendancePage = () => {
           <h1 className="text-3xl font-bold text-black">Attendance Records</h1>
           <p className="text-sm text-gray-600 mt-1">Monitor and manage teen attendance across all locations</p>
         </div>
-        <button
-          onClick={exportAttendance}
-          className="flex items-center gap-2 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
-        >
-          <Download size={20} />
-          Export CSV
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Filters */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">Date:</label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20 text-sm"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">Location:</label>
+              <select
+                value={selectedLocation}
+                onChange={(e) => setSelectedLocation(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20 text-sm"
+              >
+                <option value="all">All Locations</option>
+                {locations.map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {/* Export Button */}
+          <button
+            onClick={exportAttendance}
+            className="flex items-center gap-2 bg-[hsl(186,70%,34%)]/80 hover:bg-[hsl(186,70%,34%)] text-white px-4 py-3 rounded-lg font-bold transition-all active:scale-95"
+          >
+            <Download size={20} />
+            Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -160,46 +165,6 @@ const AttendancePage = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4 shadow-lg">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <select
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20"
-            >
-              <option value="all">All Locations</option>
-              {locations.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by name or ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[hsl(186,70%,34%)] focus:ring-2 focus:ring-[hsl(186,70%,34%)]/20"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Attendance Table */}
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">

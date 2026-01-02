@@ -181,6 +181,8 @@ const AdminMain = () => {
       {showCallModal && selectedPerson && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl relative">
+            {/* Accessibility: Screen reader title */}
+            <h1 className="sr-only">Call Shepherd Contact Modal</h1>
             <h2 className="text-2xl font-bold text-black mb-4">Call Contact</h2>
       
             <button
